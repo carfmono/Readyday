@@ -21,7 +21,7 @@ button,a{font-family:inherit;cursor:pointer;border:none;outline:none;-webkit-tap
 *{-webkit-tap-highlight-color:transparent}
 
 /* ── SPLASH ── */
-#splash{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;transition:opacity .4s,transform .4s}
+#splash{position:fixed;top:0;right:0;bottom:0;left:0;background:var(--bg);display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;z-index:100;-webkit-transition:opacity .4s,-webkit-transform .4s;transition:opacity .4s,transform .4s}
 #splash.out{opacity:0;transform:scale(.97);pointer-events:none}
 .sp-logo{width:80px;height:80px;border-radius:22px;background:linear-gradient(135deg,#7C6EFF,#00D68F);display:flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:20px;box-shadow:0 20px 50px rgba(124,110,255,.35);animation:logoIn .6s cubic-bezier(.22,1,.36,1) both}
 @keyframes logoIn{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
@@ -85,7 +85,12 @@ button,a{font-family:inherit;cursor:pointer;border:none;outline:none;-webkit-tap
 .score-num{font-size:46px;font-weight:900;letter-spacing:-3px;line-height:1;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .score-zone-lbl{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;margin-top:2px}
 .hz-decision{font-size:22px;font-weight:900;letter-spacing:-.5px;line-height:1.2;text-align:center;padding:0 24px;margin:4px 0 10px}
-.hz-insight{margin:0 16px 12px;font-size:13px;line-height:1.6;color:rgba(255,255,255,.62);font-style:italic;font-weight:500;padding:10px 14px;background:rgba(255,255,255,.04);border-radius:12px;border-left:2px solid rgba(255,255,255,.15)}
+.score-rs-mini{font-size:13px;font-weight:700;color:var(--text2);margin-top:6px;letter-spacing:.2px}
+.hz-insight{margin:0 16px 10px;padding:12px 14px;background:rgba(255,255,255,.04);border-radius:12px;border-left:3px solid rgba(124,110,255,.4)}
+.hz-insight-lbl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--p);margin-bottom:4px}
+.hz-insight-txt{font-size:13px;line-height:1.6;color:rgba(255,255,255,.72);font-weight:500}
+.pred-card{margin:0 16px 10px;background:linear-gradient(135deg,rgba(124,110,255,.07),rgba(0,214,143,.04));border:1px solid rgba(124,110,255,.18);border-radius:var(--rc);padding:12px 14px;display:-webkit-flex;display:flex;-webkit-align-items:flex-start;align-items:flex-start;gap:10px}
+.pred-icon{font-size:18px;-webkit-flex-shrink:0;flex-shrink:0;margin-top:1px}
 .rs-row{margin:0 16px 10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px 16px;display:flex;align-items:center}
 .rs-side{flex:1}
 .rs-side-lbl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:4px}
@@ -113,8 +118,6 @@ button,a{font-family:inherit;cursor:pointer;border:none;outline:none;-webkit-tap
 .factor-bar-fill{height:100%;border-radius:2px;transition:width .8s}
 .factor-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
 .factor-val{font-size:15px;font-weight:800}
-.pred-card{margin:0 16px 14px;background:linear-gradient(135deg,rgba(124,110,255,.07),rgba(0,229,160,.04));border:1px solid rgba(124,110,255,.15);border-radius:var(--rc);padding:14px 16px;display:flex;align-items:flex-start;gap:10px}
-.pred-icon{font-size:20px;flex-shrink:0;margin-top:1px}
 .pred-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--p);margin-bottom:4px}
 .pred-text{font-size:13px;line-height:1.55;color:rgba(255,255,255,.7)}
 .actions-row{padding:0 16px 8px;display:flex;gap:10px}
@@ -152,7 +155,7 @@ button,a{font-family:inherit;cursor:pointer;border:none;outline:none;-webkit-tap
 .btn-danger{width:100%;padding:14px;background:rgba(255,71,87,.1);border:1px solid rgba(255,71,87,.25);border-radius:var(--rc);font-size:14px;font-weight:700;color:var(--r);margin-top:8px;touch-action:manipulation}
 
 /* ── MODALS ── */
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .25s}
+.modal-bg{position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(0,0,0,.7);z-index:200;display:-webkit-flex;display:flex;-webkit-align-items:flex-end;align-items:flex-end;opacity:0;pointer-events:none;-webkit-transition:opacity .25s;transition:opacity .25s}
 .modal-bg.open{opacity:1;pointer-events:all}
 .modal-sheet{width:100%;background:var(--bg2);border-radius:22px 22px 0 0;padding:0 0 calc(env(safe-area-inset-bottom,0px) + 16px);max-height:90vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s cubic-bezier(.22,1,.36,1)}
 .modal-bg.open .modal-sheet{transform:translateY(0)}
@@ -255,6 +258,15 @@ button,a{font-family:inherit;cursor:pointer;border:none;outline:none;-webkit-tap
 </div>
 
 <script>
+/* Error catcher — runs before main script */
+window.onerror=function(msg,src,line,col,err){
+  var sp=document.getElementById('splash');
+  if(sp) sp.style.display='none';
+  document.body.innerHTML='<div style="padding:24px;color:#FF4757;font-size:13px;background:#07070F;min-height:100vh;font-family:monospace"><b style="font-size:16px">JS Error</b><br><br>'+msg+'<br><br>Line: '+line+', Col: '+col+'</div>';
+  return true;
+};
+</script>
+<script>
 (function(){
 'use strict';
 
@@ -329,27 +341,51 @@ function zoneName(z){var e=state.lang==='es';return z==='green'?(e?'Óptimo':'Op
 
 function decision(z,d){
   var e=state.lang==='es';
-  if(z==='green')return e?'Entrena fuerte hoy 💪':'Train hard today 💪';
-  if(z==='yellow')return d.activityLoad>60?(e?'Entrena suave hoy 🚶':'Go light today 🚶'):(e?'Entrena moderado hoy 🏃':'Train moderate today 🏃');
-  return e?'Descansa y recupérate hoy 😴':'Rest & recover today 😴';
+  if(z==='green') return e?'Hoy entrena fuerte':'Train hard today';
+  if(z==='yellow') return d.activityLoad>60?(e?'Hoy entrena suave':'Go light today'):(e?'Hoy entrena moderado':'Train moderate today');
+  return e?'Hoy descansa':'Rest today';
 }
 function insight(z,d,h){
   var e=state.lang==='es';
   var cups=h.caffeineLate&&typeof h.caffeineLate==='object'?h.caffeineLate.cups||0:0;
   var drinks=h.alcohol&&typeof h.alcohol==='object'?h.alcohol.drinks||0:0;
-  if(z==='green') return e?'Tu cuerpo está en su mejor momento. Las reservas de energía son altas y el estrés controlado. Aprovecha para el máximo esfuerzo.':'Your body is at its peak. Energy reserves are high and stress is controlled. Take advantage for maximum effort.';
-  if(z==='yellow'){
-    if(cups>2) return e?'La cafeína tardía afectó tu sueño. Muévete moderado hoy para no acumular más fatiga.':'Late caffeine affected your sleep. Move at a moderate pace today to avoid accumulating more fatigue.';
-    if(drinks>0) return e?'El alcohol de ayer impactó tu recuperación nocturna. Tu cuerpo pide moderación hoy.':'Last night\'s alcohol impacted your overnight recovery. Your body is asking for moderation today.';
-    return e?'Estás en zona moderada. Muévete, pero sin forzar. Tu cuerpo está recargando reservas.':'You\'re in the moderate zone. Move, but don\'t push. Your body is recharging reserves.';
+  if(z==='green'){
+    return e
+      ?'Tus reservas están altas y el estrés bajo control. Es un buen día para dar el máximo.'
+      :'Reserves are high and stress is under control. A good day to give your best.';
   }
-  return e?'Tu cuerpo está en modo recuperación activa. El descanso hoy es la mejor inversión para mañana.':'Your body is in active recovery mode. Rest today is the best investment for tomorrow.';
+  if(z==='yellow'){
+    if(d.sleepScore<60) return e
+      ?'Tu recuperación aún no es completa. Evita alta intensidad hoy. ⚠️'
+      :'Your recovery isn\'t complete yet. Avoid high intensity today. ⚠️';
+    if(cups>2) return e
+      ?'La cafeína tardía afectó tu sueño. Moderado es lo correcto hoy.'
+      :'Late caffeine affected your sleep. Moderate effort is right today.';
+    if(drinks>0) return e
+      ?'El alcohol de ayer redujo tu recuperación nocturna. Ve con cuidado.'
+      :'Last night\'s alcohol reduced your overnight recovery. Take it easy.';
+    return e
+      ?'Estás listo para avanzar, pero no para exigirte al máximo.'
+      :'You\'re ready to move forward, but not to push to the limit.';
+  }
+  if(d.bodyBattery<30) return e
+    ?'Batería muy baja. El descanso de hoy es la mejor inversión para mañana.'
+    :'Battery very low. Today\'s rest is the best investment for tomorrow.';
+  return e
+    ?'Tu cuerpo necesita recuperarse. Forzar hoy puede costarte varios días.'
+    :'Your body needs to recover. Pushing today could cost you several days.';
 }
 function prediction(z){
   var e=state.lang==='es';
-  if(z==='green') return e?'Si entrenas fuerte → las reservas bajarán mañana, pero habrás invertido en rendimiento real.':'Train hard → reserves drop tomorrow, but you\'ll have invested in real performance gains.';
-  if(z==='yellow') return e?'Si entrenas moderado hoy → mañana podrías recuperar +8 a +12 puntos.':'Train moderate today → tomorrow could be +8 to +12 points better.';
-  return e?'Si descansas hoy → mañana podrías recuperar +10 a +18 puntos.':'Rest today → tomorrow could be +10 to +18 points better.';
+  if(z==='green') return e
+    ?'Si entrenas fuerte hoy → mañana las reservas bajarán, pero habrás invertido en rendimiento real.'
+    :'Train hard today → tomorrow reserves drop, but you\'ll have invested in real performance.';
+  if(z==='yellow') return e
+    ?'Si entrenas moderado hoy → mañana podrías mejorar tu recuperación +8 a +12 pts.'
+    :'Train moderate today → tomorrow your recovery could improve +8 to +12 pts.';
+  return e
+    ?'Si descansas hoy → mañana podrías recuperar entre +10 y +18 puntos.'
+    :'Rest today → tomorrow you could recover +10 to +18 points.';
 }
 
 /* ── HELPERS ── */
@@ -432,15 +468,17 @@ function renderToday(){
     return '<button class="e-pill'+(sel?' sel':'')+'" style="background:'+bg+';border-color:'+bc+(fc?';color:'+fc:'')+'" onclick="setEnergy('+i+')">'+l+'</button>';
   }).join('');
 
-  // Factors
-  var factors=[
-    {k:'bb',    icon:'🔋',name:e?'Body Battery':'Body Battery',desc:e?'Reserva energía Garmin':'Garmin energy reserve',   val:d.bodyBattery+'%', pct:d.bodyBattery,  color:'#7C6EFF'},
-    {k:'sleep', icon:'😴',name:e?'Sueño':'Sleep',             desc:d.sleepHours+'h · Score '+d.sleepScore,               val:d.sleepHours+'h',  pct:d.sleepScore,   color:'#4A9EFF'},
-    {k:'stress',icon:'🧠',name:e?'Estrés':'Stress',           desc:e?'Promedio del día':'Daily average',                  val:d.stressAvg+'%',   pct:100-d.stressAvg,color:'#FF8C42'},
-    {k:'hr',    icon:'❤️',name:e?'FC Reposo':'Resting HR',    desc:e?'Frecuencia cardíaca basal':'Resting heart rate',    val:d.hrResting+' bpm',pct:hrScore(d.hrResting),color:'#FF4757'},
-    {k:'act',   icon:'⚡',name:e?'Carga actividad':'Activity',desc:e?'Intensidad de ayer':'Yesterday\'s intensity',       val:d.activityLoad+'%',pct:d.activityLoad, color:'#FFCC00'},
-    {k:'rt',    icon:'⏱️',name:e?'Tiempo recuperación':'Recovery time',desc:e?'Estimado Garmin':'Garmin estimate',       val:d.recoveryTimeH+'h',pct:Math.min(d.recoveryTimeH/48*100,100),color:'#00D68F'}
+  // Factors — all 6 defined, top 3 shown by urgency
+  var allFactors=[
+    {k:'bb',    icon:'🔋',name:e?'Body Battery':'Body Battery',desc:e?'Reserva energía Garmin':'Garmin energy reserve',   val:d.bodyBattery+'%', pct:d.bodyBattery,  color:'#7C6EFF', urgency:100-d.bodyBattery},
+    {k:'sleep', icon:'😴',name:e?'Sueño':'Sleep',             desc:d.sleepHours+'h · Score '+d.sleepScore,               val:d.sleepHours+'h',  pct:d.sleepScore,   color:'#4A9EFF', urgency:100-d.sleepScore},
+    {k:'stress',icon:'🧠',name:e?'Estrés':'Stress',           desc:e?'Promedio del día':'Daily average',                  val:d.stressAvg+'%',   pct:100-d.stressAvg,color:'#FF8C42', urgency:d.stressAvg},
+    {k:'hr',    icon:'❤️',name:e?'FC Reposo':'Resting HR',    desc:e?'Frecuencia cardíaca basal':'Resting heart rate',    val:d.hrResting+' bpm',pct:hrScore(d.hrResting),color:'#FF4757', urgency:Math.max(0,d.hrResting-55)*3},
+    {k:'act',   icon:'⚡',name:e?'Carga actividad':'Activity',desc:e?'Intensidad de ayer':'Yesterday\'s intensity',       val:d.activityLoad+'%',pct:d.activityLoad, color:'#FFCC00', urgency:d.activityLoad},
+    {k:'rt',    icon:'⏱️',name:e?'Tiempo recuperación':'Recovery time',desc:e?'Estimado Garmin':'Garmin estimate',       val:d.recoveryTimeH+'h',pct:Math.min(d.recoveryTimeH/48*100,100),color:'#00D68F', urgency:Math.min(d.recoveryTimeH*2,100)}
   ];
+  // Sort by urgency desc, keep top 3
+  var factors=allFactors.slice().sort(function(a,b){return b.urgency-a.urgency;}).slice(0,3);
   var factorsHtml=factors.map(function(f){
     return '<div class="factor-row" onclick="openFactor(\''+f.k+'\')">'+
       '<div class="factor-icon">'+f.icon+'</div>'+
@@ -466,7 +504,11 @@ function renderToday(){
   if(dinAte) habPills+='<div class="hab-pill ac-red">🌙 '+(e?'Cena tarde':'Late dinner')+'</div>';
   habPills+='<div class="hab-pill-add" onclick="openHab()">✏️ '+(e?'Editar':'Edit')+'</div>';
 
+  var insightTxt=insight(z,d,h);
+  var predTxt=prediction(z);
+
   var html=
+  // 1. SCORE + ESTADO + DECISIÓN
   '<div class="zone-glow" style="--zc:'+zoneColor(z)+'">'+
     '<div class="energy-row">'+
       '<span class="energy-lbl">'+(e?'Energía:':'Energy:')+'</span>'+epHtml+
@@ -480,12 +522,28 @@ function renderToday(){
       '<div class="score-center">'+
         '<div class="score-num" style="background:'+zg+'">'+rec+'</div>'+
         '<div class="score-zone-lbl" style="color:'+zc+'">'+zoneName(z)+'</div>'+
+        '<div class="score-rs-mini" style="color:var(--text3)">Rec '+rec+' &nbsp;·&nbsp; Str '+str+'</div>'+
       '</div>'+
     '</div>'+
-    '<div class="hz-decision">'+decision(z,d)+'</div>'+
-    '<div class="hz-insight">'+insight(z,d,h)+'</div>'+
+    '<div class="hz-decision" style="color:'+zc+'">'+decision(z,d)+'</div>'+
   '</div>'+
 
+  // 2. INSIGHT
+  '<div class="hz-insight">'+
+    '<div class="hz-insight-lbl">💡 Insight</div>'+
+    '<div class="hz-insight-txt">'+insightTxt+'</div>'+
+  '</div>'+
+
+  // 3. PREDICCIÓN
+  '<div class="pred-card">'+
+    '<div class="pred-icon">🔮</div>'+
+    '<div>'+
+      '<div class="pred-label">'+(e?'Predicción':'Prediction')+'</div>'+
+      '<div class="pred-text">'+predTxt+'</div>'+
+    '</div>'+
+  '</div>'+
+
+  // 4. RECOVERY VS STRAIN
   '<div class="rs-row">'+
     '<div class="rs-side">'+
       '<div class="rs-side-lbl">'+(e?'Recuperación':'Recovery')+'</div>'+
@@ -505,19 +563,16 @@ function renderToday(){
     '</div>'+
   '</div>'+
 
-  '<div class="habits-row">'+habPills+'</div>'+
-
+  // 5. FACTORES (top 3)
   '<div class="factors-section">'+
-    '<div class="factors-title">'+(e?'Factores — toca para más info':'Factors — tap for details')+'</div>'+
+    '<div class="factors-title">'+(e?'Factores clave — toca para más info':'Key factors — tap for details')+'</div>'+
     factorsHtml+
   '</div>'+
 
-  '<div class="pred-card">'+
-    '<div class="pred-icon">🔮</div>'+
-    '<div><div class="pred-label">'+(e?'Predicción':'Prediction')+'</div>'+
-    '<div class="pred-text">'+prediction(z)+'</div></div>'+
-  '</div>'+
+  // 6. HÁBITOS
+  '<div class="habits-row">'+habPills+'</div>'+
 
+  // 7. BOTONES
   '<div class="actions-row">'+
     '<button class="btn-primary" onclick="openDetail()">'+(e?'Ver por qué':'See why')+'</button>'+
     '<button class="btn-secondary" onclick="openHab()">🫀 '+(e?'Hábitos':'Habits')+'</button>'+
@@ -908,19 +963,29 @@ function startApp(){
 }
 
 /* ── BOOT — no tap needed, auto-advance ── */
-loadS();
-setTimeout(function(){
-  document.getElementById('splash').classList.add('out');
-  setTimeout(function(){
+function advanceSplash(){
+  try{
+    document.getElementById('splash').style.opacity='0';
+    document.getElementById('splash').style.transform='scale(.97)';
+    setTimeout(function(){
+      document.getElementById('splash').style.display='none';
+      try{
+        if(!state.onboardingDone){
+          state.obStep=state.obStep||1;
+          renderOnboarding();
+        } else {
+          startApp();
+        }
+      }catch(err2){
+        document.body.innerHTML='<div style="padding:24px;color:#FF4757;font-size:13px;background:#07070F;min-height:100vh;font-family:monospace"><b>Render Error</b><br><br>'+err2.message+'</div>';
+      }
+    },350);
+  }catch(err){
     document.getElementById('splash').style.display='none';
-    if(!state.onboardingDone){
-      state.obStep=state.obStep||1;
-      renderOnboarding();
-    } else {
-      startApp();
-    }
-  },420);
-},1600);
+  }
+}
+loadS();
+setTimeout(advanceSplash,1600);
 
 })();
 </script>
