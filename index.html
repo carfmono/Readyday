@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>ReadyDay</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#07070F;color:#F0F0FA;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+:root{
+  --bg:#07070F;--bg2:#0D0D1A;--card:#121220;--card2:#1A1A2C;
+  --border:rgba(255,255,255,.07);--text:#F0F0FA;--text2:#8888A8;--text3:#4A4A6A;
+  --p:#7C6EFF;--pd:rgba(124,110,255,.12);
+  --g:#00D68F;--gd:rgba(0,214,143,.1);
+  --y:#FFCC00;--yd:rgba(255,204,0,.1);
+  --r:#FF4757;--rd:rgba(255,71,87,.1);
+  --rc:16px
+}
+button,a{font-family:inherit;cursor:pointer;border:none;outline:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+::-webkit-scrollbar{display:none}
+*{-webkit-tap-highlight-color:transparent}
+
+/* ── SPLASH ── */
+#splash{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;transition:opacity .4s,transform .4s}
+#splash.out{opacity:0;transform:scale(.97);pointer-events:none}
+.sp-logo{width:80px;height:80px;border-radius:22px;background:linear-gradient(135deg,#7C6EFF,#00D68F);display:flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:20px;box-shadow:0 20px 50px rgba(124,110,255,.35);animation:logoIn .6s cubic-bezier(.22,1,.36,1) both}
+@keyframes logoIn{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+.sp-name{font-size:26px;font-weight:900;letter-spacing:-1px;animation:fadeUp .5s .2s both}
+.sp-tag{font-size:13px;color:var(--text2);margin-top:6px;animation:fadeUp .5s .35s both}
+.sp-bar{width:48px;height:3px;background:linear-gradient(to right,var(--p),var(--g));border-radius:2px;margin-top:32px;animation:fadeUp .5s .5s both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── ONBOARDING ── */
+#onboarding{display:none;min-height:100vh;padding:0 24px;padding-top:env(safe-area-inset-top,20px)}
+.ob-wrap{max-width:400px;margin:0 auto;padding-top:60px}
+.ob-step-ind{display:flex;gap:6px;margin-bottom:40px}
+.ob-dot{height:4px;border-radius:2px;background:var(--border);flex:1;transition:background .3s}
+.ob-dot.done{background:var(--p)}
+.ob-dot.active{background:linear-gradient(to right,var(--p),var(--g))}
+.ob-title{font-size:24px;font-weight:900;letter-spacing:-.5px;margin-bottom:6px}
+.ob-sub{font-size:14px;color:var(--text2);margin-bottom:28px;line-height:1.5}
+.ob-option{display:flex;align-items:center;gap:14px;padding:16px 18px;background:var(--card);border:1.5px solid var(--border);border-radius:var(--rc);margin-bottom:10px;cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.ob-option.sel{background:var(--pd);border-color:rgba(124,110,255,.4)}
+.ob-option-icon{font-size:24px;width:40px;text-align:center;flex-shrink:0}
+.ob-option-text{flex:1}
+.ob-option-name{font-size:15px;font-weight:700}
+.ob-option-desc{font-size:12px;color:var(--text2);margin-top:2px}
+.ob-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;transition:all .2s;flex-shrink:0}
+.ob-option.sel .ob-check{background:var(--p);border-color:var(--p);color:#fff}
+.ob-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--card);border:1px solid var(--border);border-radius:var(--rc);margin-bottom:8px}
+.ob-toggle-left{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+.ob-toggle-icon{font-size:20px;width:32px;text-align:center;flex-shrink:0}
+.ob-toggle-label{font-size:14px;font-weight:600}
+.ob-toggle-desc{font-size:11px;color:var(--text2);margin-top:1px}
+.toggle{width:44px;height:26px;border-radius:13px;background:var(--card2);border:1px solid var(--border);position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;touch-action:manipulation}
+.toggle.on{background:var(--p)}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.toggle.on::after{transform:translateX(18px)}
+.ob-cta{width:100%;padding:16px;background:linear-gradient(135deg,var(--p),#5A4FE0);border-radius:var(--rc);font-size:16px;font-weight:700;color:#fff;margin-top:24px;box-shadow:0 8px 24px rgba(124,110,255,.3);transition:opacity .15s;touch-action:manipulation}
+.ob-cta:active{opacity:.85}
+
+/* ── APP SHELL ── */
+#app{display:none;min-height:100vh;padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))}
+.app-header{position:sticky;top:0;z-index:40;background:rgba(7,7,15,.88);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:12px 20px;padding-top:calc(12px + env(safe-area-inset-top,0px));display:flex;align-items:center;justify-content:space-between}
+.app-logo{font-size:16px;font-weight:900;letter-spacing:-.3px}
+.app-logo span{background:linear-gradient(to right,var(--p),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.app-date{font-size:11px;color:var(--text2);text-align:right;line-height:1.4}
+.app-nav{position:fixed;bottom:0;left:0;right:0;z-index:40;background:rgba(7,7,15,.92);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-top:1px solid var(--border);display:flex;padding:8px 0;padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 0;background:none;color:var(--text3);transition:color .2s;touch-action:manipulation}
+.nav-btn.active{color:var(--p)}
+.nav-icon{font-size:22px}
+.nav-label{font-size:10px;font-weight:700;letter-spacing:.3px;text-transform:uppercase}
+
+/* ── TODAY ── */
+.zone-glow{min-height:100px;padding:16px 0 0;background:radial-gradient(ellipse at 50% -20%,var(--zc,rgba(124,110,255,.1)),transparent 60%);transition:background 1s}
+.energy-row{display:flex;align-items:center;gap:6px;padding:0 16px 0;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.energy-lbl{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;flex-shrink:0}
+.e-pill{padding:6px 11px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);color:var(--text2);transition:all .2s;cursor:pointer;flex-shrink:0;touch-action:manipulation}
+.e-pill.sel{color:#fff;border-color:transparent}
+.score-wrap{display:flex;flex-direction:column;align-items:center;padding:16px 0 6px;position:relative}
+.score-svg{width:160px;height:160px;transform:rotate(-90deg)}
+.score-track{fill:none;stroke:rgba(255,255,255,.06);stroke-width:10;stroke-linecap:round}
+.score-fill{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 1.2s cubic-bezier(.22,1,.36,1),stroke .5s}
+.score-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none}
+.score-num{font-size:46px;font-weight:900;letter-spacing:-3px;line-height:1;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.score-zone-lbl{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;margin-top:2px}
+.hz-decision{font-size:22px;font-weight:900;letter-spacing:-.5px;line-height:1.2;text-align:center;padding:0 24px;margin:4px 0 10px}
+.hz-insight{margin:0 16px 12px;font-size:13px;line-height:1.6;color:rgba(255,255,255,.62);font-style:italic;font-weight:500;padding:10px 14px;background:rgba(255,255,255,.04);border-radius:12px;border-left:2px solid rgba(255,255,255,.15)}
+.rs-row{margin:0 16px 10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px 16px;display:flex;align-items:center}
+.rs-side{flex:1}
+.rs-side-lbl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:4px}
+.rs-side-num{font-size:34px;font-weight:900;letter-spacing:-2px;line-height:1}
+.rs-side-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.rs-bar-wrap{height:3px;background:rgba(255,255,255,.06);border-radius:2px;margin-top:6px;overflow:hidden}
+.rs-bar{height:100%;border-radius:2px;transition:width 1s cubic-bezier(.22,1,.36,1)}
+.rs-center{min-width:64px;text-align:center;padding:0 10px;border-left:1px solid rgba(255,255,255,.07);border-right:1px solid rgba(255,255,255,.07);margin:0 4px}
+.rs-center-lbl{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:3px}
+.rs-center-num{font-size:22px;font-weight:900;line-height:1}
+.habits-row{padding:0 16px 8px;display:flex;gap:8px;flex-wrap:wrap}
+.hab-pill{display:flex;align-items:center;gap:6px;padding:7px 12px;background:var(--card);border:1px solid var(--border);border-radius:20px;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .2s;touch-action:manipulation}
+.hab-pill.ac-red{background:rgba(255,71,87,.1);border-color:rgba(255,71,87,.3);color:#FF6B7A}
+.hab-pill.ac-yel{background:rgba(255,204,0,.08);border-color:rgba(255,204,0,.2);color:var(--y)}
+.hab-pill-add{padding:7px 12px;background:var(--pd);border:1px dashed rgba(124,110,255,.3);border-radius:20px;font-size:12px;font-weight:600;color:var(--p);cursor:pointer;touch-action:manipulation}
+.factors-section{padding:0 16px 4px}
+.factors-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:8px}
+.factor-row{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:7px;cursor:pointer;transition:background .15s;touch-action:manipulation}
+.factor-row:active{background:var(--card2)}
+.factor-icon{font-size:20px;width:32px;text-align:center;flex-shrink:0}
+.factor-mid{flex:1;min-width:0}
+.factor-name{font-size:13px;font-weight:700}
+.factor-desc{font-size:11px;color:var(--text2);margin-top:1px}
+.factor-bar{height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;margin-top:5px}
+.factor-bar-fill{height:100%;border-radius:2px;transition:width .8s}
+.factor-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.factor-val{font-size:15px;font-weight:800}
+.pred-card{margin:0 16px 14px;background:linear-gradient(135deg,rgba(124,110,255,.07),rgba(0,229,160,.04));border:1px solid rgba(124,110,255,.15);border-radius:var(--rc);padding:14px 16px;display:flex;align-items:flex-start;gap:10px}
+.pred-icon{font-size:20px;flex-shrink:0;margin-top:1px}
+.pred-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--p);margin-bottom:4px}
+.pred-text{font-size:13px;line-height:1.55;color:rgba(255,255,255,.7)}
+.actions-row{padding:0 16px 8px;display:flex;gap:10px}
+.btn-primary{flex:1;padding:14px;background:linear-gradient(135deg,var(--p),#5A4FE0);border-radius:var(--rc);font-size:14px;font-weight:700;color:#fff;box-shadow:0 6px 20px rgba(124,110,255,.25);transition:opacity .15s;text-align:center;touch-action:manipulation}
+.btn-primary:active{opacity:.85}
+.btn-secondary{padding:14px 16px;background:var(--card);border:1px solid var(--border);border-radius:var(--rc);font-size:14px;font-weight:700;color:var(--text2);transition:opacity .15s;touch-action:manipulation}
+.btn-secondary:active{opacity:.7}
+
+/* ── TRENDS ── */
+.trends-wrap{padding:16px}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rc);padding:16px;margin-bottom:12px}
+.chart-title{font-size:13px;font-weight:800;margin-bottom:3px}
+.chart-sub{font-size:11px;color:var(--text2);margin-bottom:12px}
+.spark-wrap{display:flex;align-items:flex-end;gap:4px;height:70px}
+.spark-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.spark-bar{width:100%;border-radius:4px 4px 0 0;min-height:4px;transition:height .6s cubic-bezier(.22,1,.36,1)}
+.spark-day{font-size:9px;color:var(--text3);font-weight:600}
+.spark-val{font-size:9px;color:var(--text2);font-weight:700}
+.metric-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
+.metric-tile{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px}
+.metric-tile-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text3);margin-bottom:4px}
+.metric-tile-val{font-size:22px;font-weight:900;letter-spacing:-1px}
+.metric-tile-sub{font-size:11px;color:var(--text2);margin-top:3px;display:flex;align-items:center;gap:4px}
+
+/* ── SETTINGS ── */
+.settings-wrap{padding:16px}
+.settings-section{margin-bottom:16px}
+.settings-section-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:8px;padding:0 4px}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--card);border:1px solid var(--border);border-radius:var(--rc);margin-bottom:6px}
+.setting-label{font-size:14px;font-weight:600}
+.setting-desc{font-size:11px;color:var(--text2);margin-top:2px}
+.seg-ctrl{display:flex;background:var(--card2);border-radius:8px;overflow:hidden;border:1px solid var(--border)}
+.seg-btn{padding:7px 12px;font-size:12px;font-weight:700;color:var(--text2);background:none;transition:all .2s;touch-action:manipulation}
+.seg-btn.active{background:var(--p);color:#fff}
+.btn-danger{width:100%;padding:14px;background:rgba(255,71,87,.1);border:1px solid rgba(255,71,87,.25);border-radius:var(--rc);font-size:14px;font-weight:700;color:var(--r);margin-top:8px;touch-action:manipulation}
+
+/* ── MODALS ── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .25s}
+.modal-bg.open{opacity:1;pointer-events:all}
+.modal-sheet{width:100%;background:var(--bg2);border-radius:22px 22px 0 0;padding:0 0 calc(env(safe-area-inset-bottom,0px) + 16px);max-height:90vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s cubic-bezier(.22,1,.36,1)}
+.modal-bg.open .modal-sheet{transform:translateY(0)}
+.modal-handle{width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,.12);margin:12px auto 0}
+.modal-header{padding:14px 20px 0;display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:17px;font-weight:800}
+.modal-close{width:32px;height:32px;border-radius:50%;background:var(--card2);font-size:16px;color:var(--text2);display:flex;align-items:center;justify-content:center;touch-action:manipulation}
+.modal-body{padding:16px 20px}
+.detail-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.detail-row:last-child{border-bottom:none}
+.detail-label{font-size:13px;color:var(--text2)}
+.detail-val{font-size:14px;font-weight:700}
+.detail-raw{font-size:11px;color:var(--text3)}
+.detail-section-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin:14px 0 6px}
+.formula-card{background:rgba(255,255,255,.04);border-radius:10px;padding:12px;font-size:11px;font-family:monospace;color:var(--p);line-height:1.8;margin-bottom:4px}
+.hab-section{margin-bottom:18px}
+.hab-section-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:10px}
+.hab-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+.hab-row-left{flex:1}
+.hab-row-name{font-size:14px;font-weight:700}
+.hab-row-impact{font-size:11px;font-weight:700;color:var(--r);margin-top:2px;min-height:15px}
+.stepper{display:flex;align-items:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;overflow:hidden;flex-shrink:0}
+.step-btn{width:40px;height:40px;font-size:22px;font-weight:300;color:var(--text2);display:flex;align-items:center;justify-content:center;transition:background .15s;touch-action:manipulation}
+.step-btn:active{background:rgba(255,255,255,.1)}
+.step-val{min-width:36px;text-align:center;font-size:16px;font-weight:800;color:var(--text)}
+.time-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;margin-bottom:4px}
+.time-chip{padding:7px 13px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);color:var(--text2);cursor:pointer;transition:all .2s;touch-action:manipulation}
+.time-chip.sel{background:var(--pd);border-color:rgba(124,110,255,.3);color:var(--p)}
+.hab-total{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:rgba(255,71,87,.07);border:1px solid rgba(255,71,87,.15);border-radius:12px;margin-bottom:16px}
+.hab-total-lbl{font-size:13px;font-weight:600;color:var(--text2)}
+.hab-total-val{font-size:16px;font-weight:900;color:var(--r)}
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <div class="sp-logo">🌅</div>
+  <div class="sp-name">ReadyDay</div>
+  <div class="sp-tag" id="sp-tag">Know your body. Decide your day.</div>
+  <div class="sp-bar"></div>
+</div>
+
+<div id="onboarding"><div class="ob-wrap" id="ob-inner"></div></div>
+
+<div id="app">
+  <div class="app-header">
+    <div class="app-logo"><span>ReadyDay</span></div>
+    <div class="app-date" id="app-date"></div>
+  </div>
+  <div id="tab-today" style="display:none"></div>
+  <div id="tab-trends" style="display:none"></div>
+  <div id="tab-settings" style="display:none"></div>
+  <nav class="app-nav">
+    <button class="nav-btn" id="nb-today" onclick="switchTab('today')">
+      <div class="nav-icon">🏠</div><div class="nav-label" id="nl-today">Hoy</div>
+    </button>
+    <button class="nav-btn" id="nb-trends" onclick="switchTab('trends')">
+      <div class="nav-icon">📈</div><div class="nav-label" id="nl-trends">Tendencias</div>
+    </button>
+    <button class="nav-btn" id="nb-settings" onclick="switchTab('settings')">
+      <div class="nav-icon">⚙️</div><div class="nav-label" id="nl-settings">Ajustes</div>
+    </button>
+  </nav>
+</div>
+
+<!-- MODAL: WHY -->
+<div class="modal-bg" id="modal-detail-bg" onclick="closeModal('detail')">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title" id="md-title">¿Por qué este score?</div>
+      <button class="modal-close" onclick="closeModal('detail')">✕</button>
+    </div>
+    <div class="modal-body" id="md-body"></div>
+  </div>
+</div>
+
+<!-- MODAL: HABITS -->
+<div class="modal-bg" id="modal-hab-bg" onclick="closeModal('hab')">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title" id="hab-title">Hábitos de ayer</div>
+      <button class="modal-close" onclick="closeModal('hab')">✕</button>
+    </div>
+    <div class="modal-body"><div id="hab-body"></div></div>
+  </div>
+</div>
+
+<!-- MODAL: FACTOR -->
+<div class="modal-bg" id="modal-factor-bg" onclick="closeModal('factor')">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title" id="mf-title">Factor</div>
+      <button class="modal-close" onclick="closeModal('factor')">✕</button>
+    </div>
+    <div class="modal-body" id="mf-body"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+/* ── STORAGE ── */
+var _mem={};
+function stor(k,v){
+  try{
+    if(v===undefined)return JSON.parse(localStorage.getItem(k));
+    localStorage.setItem(k,JSON.stringify(v));
+  }catch(e){
+    if(v===undefined)return _mem[k]||null;
+    _mem[k]=v;
+  }
+}
+
+/* ── STATE ── */
+var state={
+  lang:'es',goal:'health',onboardingDone:false,
+  defaults:{caffeineLate:{cups:0,lastTime:null},alcohol:{drinks:0},lateDinner:{ate:false,time:null}},
+  todayOv:{caffeineLate:null,alcohol:null,lateDinner:null},
+  energyOv:null,tab:'today',obStep:1
+};
+function saveS(){stor('rdState',state);}
+function loadS(){
+  var s=stor('rdState');
+  if(s){try{state=Object.assign({},state,s);}catch(e){}}
+}
+
+/* ── DATES ── */
+function dAgo(n){var d=new Date();d.setDate(d.getDate()-n);return d.toISOString().slice(0,10);}
+var today=dAgo(0);
+var DAY={es:['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'],en:['Sun','Mon','Tue','Wed','Thu','Fri','Sat']};
+function dayName(ds){var d=new Date(ds+'T12:00:00');return DAY[state.lang][d.getDay()];}
+
+/* ── MOCK DATA ── */
+var H=[
+  {date:dAgo(6),bodyBattery:38,stressAvg:68,hrResting:62,sleepScore:50,sleepHours:5.8,activityLoad:82,recoveryTimeH:52,habits:{caffeineLate:{cups:1,lastTime:'16:00'},alcohol:{drinks:0},lateDinner:{ate:false,time:null}}},
+  {date:dAgo(5),bodyBattery:52,stressAvg:55,hrResting:60,sleepScore:65,sleepHours:6.8,activityLoad:45,recoveryTimeH:38,habits:{caffeineLate:{cups:0,lastTime:null},alcohol:{drinks:0},lateDinner:{ate:false,time:null}}},
+  {date:dAgo(4),bodyBattery:71,stressAvg:42,hrResting:58,sleepScore:78,sleepHours:7.5,activityLoad:30,recoveryTimeH:22,habits:{caffeineLate:{cups:0,lastTime:null},alcohol:{drinks:0},lateDinner:{ate:false,time:null}}},
+  {date:dAgo(3),bodyBattery:83,stressAvg:35,hrResting:56,sleepScore:85,sleepHours:7.9,activityLoad:20,recoveryTimeH:14,habits:{caffeineLate:{cups:0,lastTime:null},alcohol:{drinks:0},lateDinner:{ate:false,time:null}}},
+  {date:dAgo(2),bodyBattery:55,stressAvg:72,hrResting:64,sleepScore:58,sleepHours:6.1,activityLoad:75,recoveryTimeH:36,habits:{caffeineLate:{cups:0,lastTime:null},alcohol:{drinks:2},lateDinner:{ate:true,time:'23:00+'}}},
+  {date:dAgo(1),bodyBattery:43,stressAvg:62,hrResting:63,sleepScore:55,sleepHours:6.4,activityLoad:68,recoveryTimeH:48,habits:{caffeineLate:{cups:3,lastTime:'18:00'},alcohol:{drinks:0},lateDinner:{ate:false,time:null}}},
+  {date:today,bodyBattery:67,stressAvg:45,hrResting:59,sleepScore:74,sleepHours:7.2,activityLoad:40,recoveryTimeH:28,habits:{caffeineLate:{cups:0,lastTime:null},alcohol:{drinks:0},lateDinner:{ate:false,time:null}}}
+];
+
+/* ── ALGORITHM ── */
+function clamp(v,a,b){return Math.min(b,Math.max(a,v));}
+function habPen(h){
+  var cups=h.caffeineLate&&typeof h.caffeineLate==='object'?h.caffeineLate.cups||0:(h.caffeineLate?2:0);
+  var drinks=h.alcohol&&typeof h.alcohol==='object'?h.alcohol.drinks||0:(h.alcohol?2:0);
+  var dinAte=h.lateDinner&&typeof h.lateDinner==='object'?h.lateDinner.ate||false:(!!h.lateDinner);
+  var dinTime=h.lateDinner&&typeof h.lateDinner==='object'?h.lateDinner.time||'22:00':'22:00';
+  var cP=Math.min(cups*8,28);
+  var aP=Math.min(drinks*13,35);
+  var dP=dinAte?(dinTime==='23:00+'?20:dinTime==='22:00'?13:7):0;
+  return Math.min(cP+aP+dP,100);
+}
+function hrScore(hr){return hr<=50?100:hr<=55?90:hr<=60?75:hr<=65?55:hr<=70?35:20;}
+function calcRec(d,h){
+  return clamp(Math.round(.35*d.bodyBattery+.25*(100-d.stressAvg)+.20*hrScore(d.hrResting)+.20*d.sleepScore),0,100);
+}
+function calcStr(d,h){
+  var rt=d.recoveryTimeH,rp=rt>=48?85:rt>=36?65:rt>=24?45:rt>=12?25:10;
+  return clamp(Math.round(.40*d.activityLoad+.25*rp+.20*d.stressAvg+.15*habPen(h)),0,100);
+}
+function calcBal(rec,str){return rec-Math.round(str/2);}
+function getZone(rec,bal){return(rec>=70&&bal>=20)?'green':(rec>=45)?'yellow':'red';}
+function zoneColor(z){return z==='green'?'rgba(0,214,143,.13)':z==='yellow'?'rgba(255,204,0,.10)':'rgba(255,71,87,.12)';}
+function zoneHex(z){return z==='green'?'#00D68F':z==='yellow'?'#FFCC00':'#FF4757';}
+function zoneGrad(z){return z==='green'?'linear-gradient(135deg,#00D68F,#00B87A)':z==='yellow'?'linear-gradient(135deg,#FFCC00,#E6B800)':'linear-gradient(135deg,#FF4757,#E03444)';}
+function zoneName(z){var e=state.lang==='es';return z==='green'?(e?'Óptimo':'Optimal'):z==='yellow'?(e?'Moderado':'Moderate'):(e?'Recuperación':'Recovery');}
+
+function decision(z,d){
+  var e=state.lang==='es';
+  if(z==='green')return e?'Entrena fuerte hoy 💪':'Train hard today 💪';
+  if(z==='yellow')return d.activityLoad>60?(e?'Entrena suave hoy 🚶':'Go light today 🚶'):(e?'Entrena moderado hoy 🏃':'Train moderate today 🏃');
+  return e?'Descansa y recupérate hoy 😴':'Rest & recover today 😴';
+}
+function insight(z,d,h){
+  var e=state.lang==='es';
+  var cups=h.caffeineLate&&typeof h.caffeineLate==='object'?h.caffeineLate.cups||0:0;
+  var drinks=h.alcohol&&typeof h.alcohol==='object'?h.alcohol.drinks||0:0;
+  if(z==='green') return e?'Tu cuerpo está en su mejor momento. Las reservas de energía son altas y el estrés controlado. Aprovecha para el máximo esfuerzo.':'Your body is at its peak. Energy reserves are high and stress is controlled. Take advantage for maximum effort.';
+  if(z==='yellow'){
+    if(cups>2) return e?'La cafeína tardía afectó tu sueño. Muévete moderado hoy para no acumular más fatiga.':'Late caffeine affected your sleep. Move at a moderate pace today to avoid accumulating more fatigue.';
+    if(drinks>0) return e?'El alcohol de ayer impactó tu recuperación nocturna. Tu cuerpo pide moderación hoy.':'Last night\'s alcohol impacted your overnight recovery. Your body is asking for moderation today.';
+    return e?'Estás en zona moderada. Muévete, pero sin forzar. Tu cuerpo está recargando reservas.':'You\'re in the moderate zone. Move, but don\'t push. Your body is recharging reserves.';
+  }
+  return e?'Tu cuerpo está en modo recuperación activa. El descanso hoy es la mejor inversión para mañana.':'Your body is in active recovery mode. Rest today is the best investment for tomorrow.';
+}
+function prediction(z){
+  var e=state.lang==='es';
+  if(z==='green') return e?'Si entrenas fuerte → las reservas bajarán mañana, pero habrás invertido en rendimiento real.':'Train hard → reserves drop tomorrow, but you\'ll have invested in real performance gains.';
+  if(z==='yellow') return e?'Si entrenas moderado hoy → mañana podrías recuperar +8 a +12 puntos.':'Train moderate today → tomorrow could be +8 to +12 points better.';
+  return e?'Si descansas hoy → mañana podrías recuperar +10 a +18 puntos.':'Rest today → tomorrow could be +10 to +18 points better.';
+}
+
+/* ── HELPERS ── */
+function defOn(k){
+  var d=state.defaults;
+  if(k==='caffeineLate') return !!(d.caffeineLate&&d.caffeineLate.cups>0);
+  if(k==='alcohol') return !!(d.alcohol&&d.alcohol.drinks>0);
+  if(k==='lateDinner') return !!(d.lateDinner&&d.lateDinner.ate);
+  return false;
+}
+function getTodayHabits(){
+  var td=H[H.length-1];
+  var ov=state.todayOv||{};
+  return {
+    caffeineLate:ov.caffeineLate||td.habits.caffeineLate,
+    alcohol:ov.alcohol||td.habits.alcohol,
+    lateDinner:ov.lateDinner||td.habits.lateDinner
+  };
+}
+function getTodayData(){
+  var td=Object.assign({},H[H.length-1]);
+  if(state.energyOv!=null){
+    var emap=[15,30,50,70,88];
+    td.bodyBattery=emap[state.energyOv]||50;
+  }
+  return td;
+}
+function trendArrow(hist,i){
+  if(i<=0) return '<span style="color:var(--text3)">→</span>';
+  var diff=hist[i]-hist[i-1];
+  if(diff>2) return '<span style="color:#00D68F">↑</span>';
+  if(diff<-2) return '<span style="color:#FF4757">↓</span>';
+  return '<span style="color:var(--text3)">→</span>';
+}
+
+/* ── NAV ── */
+function switchTab(t){
+  state.tab=t;
+  ['today','trends','settings'].forEach(function(k){
+    document.getElementById('tab-'+k).style.display=k===t?'block':'none';
+    document.getElementById('nb-'+k).className='nav-btn'+(t===k?' active':'');
+  });
+  updateNavLabels();
+  if(t==='today') renderToday();
+  else if(t==='trends') renderTrends();
+  else if(t==='settings') renderSettings();
+}
+window.switchTab=switchTab;
+
+function updateNavLabels(){
+  var e=state.lang==='es';
+  document.getElementById('nl-today').textContent=e?'Hoy':'Today';
+  document.getElementById('nl-trends').textContent=e?'Tendencias':'Trends';
+  document.getElementById('nl-settings').textContent=e?'Ajustes':'Settings';
+}
+
+/* ── RENDER TODAY ── */
+function renderToday(){
+  var d=getTodayData(),h=getTodayHabits();
+  var rec=calcRec(d,h),str=calcStr(d,h),bal=calcBal(rec,str);
+  var z=getZone(rec,bal),zc=zoneHex(z),zg=zoneGrad(z);
+  var e=state.lang==='es';
+  var circ=2*Math.PI*66,offset=circ*(1-rec/100);
+  var balColor=bal>=20?'#00D68F':bal>=0?'#FFCC00':'#FF4757';
+
+  // Trend data
+  var recHist=H.map(function(x){return calcRec(x,x.habits);});
+  var strHist=H.map(function(x){return calcStr(x,x.habits);});
+  var trRec=trendArrow(recHist,recHist.length-1);
+  var trStr=trendArrow(strHist,strHist.length-1);
+
+  // Energy pills
+  var epLbls=e?['Muy baja','Baja','Media','Alta','Muy alta']:['Very low','Low','Medium','High','Very high'];
+  var epColors=['#FF4757','#FF8C42','#FFCC00','#4A9EFF','#00D68F'];
+  var epHtml=epLbls.map(function(l,i){
+    var sel=state.energyOv===i;
+    var bg=sel?epColors[i]:'rgba(255,255,255,.05)';
+    var bc=sel?epColors[i]:'rgba(255,255,255,.08)';
+    var fc=sel?'#fff':null;
+    return '<button class="e-pill'+(sel?' sel':'')+'" style="background:'+bg+';border-color:'+bc+(fc?';color:'+fc:'')+'" onclick="setEnergy('+i+')">'+l+'</button>';
+  }).join('');
+
+  // Factors
+  var factors=[
+    {k:'bb',    icon:'🔋',name:e?'Body Battery':'Body Battery',desc:e?'Reserva energía Garmin':'Garmin energy reserve',   val:d.bodyBattery+'%', pct:d.bodyBattery,  color:'#7C6EFF'},
+    {k:'sleep', icon:'😴',name:e?'Sueño':'Sleep',             desc:d.sleepHours+'h · Score '+d.sleepScore,               val:d.sleepHours+'h',  pct:d.sleepScore,   color:'#4A9EFF'},
+    {k:'stress',icon:'🧠',name:e?'Estrés':'Stress',           desc:e?'Promedio del día':'Daily average',                  val:d.stressAvg+'%',   pct:100-d.stressAvg,color:'#FF8C42'},
+    {k:'hr',    icon:'❤️',name:e?'FC Reposo':'Resting HR',    desc:e?'Frecuencia cardíaca basal':'Resting heart rate',    val:d.hrResting+' bpm',pct:hrScore(d.hrResting),color:'#FF4757'},
+    {k:'act',   icon:'⚡',name:e?'Carga actividad':'Activity',desc:e?'Intensidad de ayer':'Yesterday\'s intensity',       val:d.activityLoad+'%',pct:d.activityLoad, color:'#FFCC00'},
+    {k:'rt',    icon:'⏱️',name:e?'Tiempo recuperación':'Recovery time',desc:e?'Estimado Garmin':'Garmin estimate',       val:d.recoveryTimeH+'h',pct:Math.min(d.recoveryTimeH/48*100,100),color:'#00D68F'}
+  ];
+  var factorsHtml=factors.map(function(f){
+    return '<div class="factor-row" onclick="openFactor(\''+f.k+'\')">'+
+      '<div class="factor-icon">'+f.icon+'</div>'+
+      '<div class="factor-mid">'+
+        '<div class="factor-name">'+f.name+'</div>'+
+        '<div class="factor-desc">'+f.desc+'</div>'+
+        '<div class="factor-bar"><div class="factor-bar-fill" style="width:'+Math.round(f.pct)+'%;background:'+f.color+'"></div></div>'+
+      '</div>'+
+      '<div class="factor-right">'+
+        '<div class="factor-val" style="color:'+f.color+'">'+f.val+'</div>'+
+        '<div style="font-size:12px;color:var(--text3);margin-left:2px">›</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+
+  // Habit pills
+  var cups=h.caffeineLate&&typeof h.caffeineLate==='object'?h.caffeineLate.cups||0:0;
+  var drinks=h.alcohol&&typeof h.alcohol==='object'?h.alcohol.drinks||0:0;
+  var dinAte=h.lateDinner&&typeof h.lateDinner==='object'?h.lateDinner.ate||false:false;
+  var habPills='';
+  if(cups>0) habPills+='<div class="hab-pill ac-yel">☕ '+cups+(e?' cafés':' coffees')+' <span style="font-size:10px;opacity:.7">−'+Math.min(cups*8,28)+'pts</span></div>';
+  if(drinks>0) habPills+='<div class="hab-pill ac-red">🍷 '+drinks+(e?' bebidas':' drinks')+' <span style="font-size:10px;opacity:.7">−'+Math.min(drinks*13,35)+'pts</span></div>';
+  if(dinAte) habPills+='<div class="hab-pill ac-red">🌙 '+(e?'Cena tarde':'Late dinner')+'</div>';
+  habPills+='<div class="hab-pill-add" onclick="openHab()">✏️ '+(e?'Editar':'Edit')+'</div>';
+
+  var html=
+  '<div class="zone-glow" style="--zc:'+zoneColor(z)+'">'+
+    '<div class="energy-row">'+
+      '<span class="energy-lbl">'+(e?'Energía:':'Energy:')+'</span>'+epHtml+
+    '</div>'+
+    '<div class="score-wrap">'+
+      '<svg class="score-svg" viewBox="0 0 160 160">'+
+        '<circle class="score-track" cx="80" cy="80" r="66"/>'+
+        '<circle class="score-fill" cx="80" cy="80" r="66" stroke="'+zc+'"'+
+          ' stroke-dasharray="'+circ.toFixed(1)+'" stroke-dashoffset="'+offset.toFixed(1)+'"/>'+
+      '</svg>'+
+      '<div class="score-center">'+
+        '<div class="score-num" style="background:'+zg+'">'+rec+'</div>'+
+        '<div class="score-zone-lbl" style="color:'+zc+'">'+zoneName(z)+'</div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="hz-decision">'+decision(z,d)+'</div>'+
+    '<div class="hz-insight">'+insight(z,d,h)+'</div>'+
+  '</div>'+
+
+  '<div class="rs-row">'+
+    '<div class="rs-side">'+
+      '<div class="rs-side-lbl">'+(e?'Recuperación':'Recovery')+'</div>'+
+      '<div class="rs-side-num" style="color:'+zc+'">'+rec+'</div>'+
+      '<div class="rs-side-sub">'+trRec+' '+(e?'vs ayer':'vs yesterday')+'</div>'+
+      '<div class="rs-bar-wrap"><div class="rs-bar" style="width:'+rec+'%;background:'+zc+'"></div></div>'+
+    '</div>'+
+    '<div class="rs-center">'+
+      '<div class="rs-center-lbl">Balance</div>'+
+      '<div class="rs-center-num" style="color:'+balColor+'">'+(bal>0?'+':'')+bal+'</div>'+
+    '</div>'+
+    '<div class="rs-side" style="text-align:right">'+
+      '<div class="rs-side-lbl">'+(e?'Carga':'Strain')+'</div>'+
+      '<div class="rs-side-num" style="color:#FF8C42">'+str+'</div>'+
+      '<div class="rs-side-sub">'+trStr+' '+(e?'vs ayer':'vs yesterday')+'</div>'+
+      '<div class="rs-bar-wrap"><div class="rs-bar" style="width:'+str+'%;background:#FF8C42;margin-left:auto"></div></div>'+
+    '</div>'+
+  '</div>'+
+
+  '<div class="habits-row">'+habPills+'</div>'+
+
+  '<div class="factors-section">'+
+    '<div class="factors-title">'+(e?'Factores — toca para más info':'Factors — tap for details')+'</div>'+
+    factorsHtml+
+  '</div>'+
+
+  '<div class="pred-card">'+
+    '<div class="pred-icon">🔮</div>'+
+    '<div><div class="pred-label">'+(e?'Predicción':'Prediction')+'</div>'+
+    '<div class="pred-text">'+prediction(z)+'</div></div>'+
+  '</div>'+
+
+  '<div class="actions-row">'+
+    '<button class="btn-primary" onclick="openDetail()">'+(e?'Ver por qué':'See why')+'</button>'+
+    '<button class="btn-secondary" onclick="openHab()">🫀 '+(e?'Hábitos':'Habits')+'</button>'+
+  '</div>';
+
+  document.getElementById('tab-today').innerHTML=html;
+
+  // Header date
+  var now=new Date();
+  var dN=e?['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado']:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var mN=e?['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('app-date').textContent=dN[now.getDay()]+', '+now.getDate()+' '+mN[now.getMonth()];
+}
+window.setEnergy=function(i){state.energyOv=(state.energyOv===i?null:i);saveS();renderToday();};
+
+/* ── RENDER TRENDS ── */
+function renderTrends(){
+  var e=state.lang==='es';
+  var scores=H.map(function(x){
+    var r=calcRec(x,x.habits),s=calcStr(x,x.habits);
+    return{date:x.date,rec:r,str:s,bal:calcBal(r,s),z:getZone(r,calcBal(r,s)),bb:x.bodyBattery,sh:x.sleepHours};
+  });
+  var maxRec=Math.max.apply(null,scores.map(function(s){return s.rec;}))||1;
+  var maxStr=Math.max.apply(null,scores.map(function(s){return s.str;}))||1;
+  var zCol={green:'#00D68F',yellow:'#FFCC00',red:'#FF4757'};
+
+  function barsRec(){return scores.map(function(s){
+    var h=Math.round(s.rec/maxRec*55)+5;
+    return '<div class="spark-col"><div class="spark-val">'+s.rec+'</div>'+
+      '<div class="spark-bar" style="height:'+h+'px;background:'+zCol[s.z]+'"></div>'+
+      '<div class="spark-day">'+dayName(s.date)+'</div></div>';
+  }).join('');}
+  function barsStr(){return scores.map(function(s){
+    var h=Math.round(s.str/maxStr*55)+5;
+    return '<div class="spark-col"><div class="spark-val">'+s.str+'</div>'+
+      '<div class="spark-bar" style="height:'+h+'px;background:#FF8C42"></div>'+
+      '<div class="spark-day">'+dayName(s.date)+'</div></div>';
+  }).join('');}
+  function barsPen(){return H.map(function(x){
+    var p=habPen(x.habits);var h=Math.round(p/100*55)+2;
+    var col=p>30?'#FF4757':p>10?'#FFCC00':'#00D68F';
+    return '<div class="spark-col"><div class="spark-val">'+p+'</div>'+
+      '<div class="spark-bar" style="height:'+h+'px;background:'+col+'"></div>'+
+      '<div class="spark-day">'+dayName(x.date)+'</div></div>';
+  }).join('');}
+
+  var avgRec=Math.round(scores.reduce(function(a,s){return a+s.rec;},0)/scores.length);
+  var avgStr=Math.round(scores.reduce(function(a,s){return a+s.str;},0)/scores.length);
+  var avgSleep=(H.reduce(function(a,x){return a+x.sleepHours;},0)/H.length).toFixed(1);
+  var avgBB=Math.round(H.reduce(function(a,x){return a+x.bodyBattery;},0)/H.length);
+  var trend7=scores[6].rec>scores[0].rec+3?'↑':scores[6].rec<scores[0].rec-3?'↓':'→';
+
+  document.getElementById('tab-trends').innerHTML=
+  '<div class="trends-wrap">'+
+  '<div class="chart-card">'+
+    '<div class="chart-title">'+(e?'Recuperación — 7 días':'Recovery — 7 days')+'</div>'+
+    '<div class="chart-sub">'+(e?'Promedio: ':'Avg: ')+avgRec+' · Tendencia: '+trend7+'</div>'+
+    '<div class="spark-wrap">'+barsRec()+'</div>'+
+  '</div>'+
+  '<div class="chart-card">'+
+    '<div class="chart-title">'+(e?'Carga (Strain) — 7 días':'Strain — 7 days')+'</div>'+
+    '<div class="chart-sub">'+(e?'Promedio: ':'Avg: ')+avgStr+'</div>'+
+    '<div class="spark-wrap">'+barsStr()+'</div>'+
+  '</div>'+
+  '<div class="metric-grid">'+
+    '<div class="metric-tile"><div class="metric-tile-lbl">'+(e?'Sueño promedio':'Avg sleep')+'</div>'+
+      '<div class="metric-tile-val">'+avgSleep+'h</div>'+
+      '<div class="metric-tile-sub"><span style="color:'+(parseFloat(avgSleep)>=7?'#00D68F':'#FFCC00')+'">●</span> '+(parseFloat(avgSleep)>=7?(e?'Óptimo':'Optimal'):(e?'Mejorable':'Improvable'))+'</div></div>'+
+    '<div class="metric-tile"><div class="metric-tile-lbl">Body Battery</div>'+
+      '<div class="metric-tile-val">'+avgBB+'</div>'+
+      '<div class="metric-tile-sub"><span style="color:'+(avgBB>=60?'#00D68F':avgBB>=40?'#FFCC00':'#FF4757')+'">●</span> '+(e?'Promedio':'Average')+'</div></div>'+
+    '<div class="metric-tile"><div class="metric-tile-lbl">'+(e?'Días óptimos':'Optimal days')+'</div>'+
+      '<div class="metric-tile-val" style="color:#00D68F">'+scores.filter(function(s){return s.z==='green';}).length+'<span style="font-size:13px;color:var(--text3)">/7</span></div>'+
+      '<div class="metric-tile-sub"><span style="color:#00D68F">●</span> '+(e?'Zona verde':'Green zone')+'</div></div>'+
+    '<div class="metric-tile"><div class="metric-tile-lbl">'+(e?'Días recuperación':'Recovery days')+'</div>'+
+      '<div class="metric-tile-val" style="color:#FF4757">'+scores.filter(function(s){return s.z==='red';}).length+'<span style="font-size:13px;color:var(--text3)">/7</span></div>'+
+      '<div class="metric-tile-sub"><span style="color:#FF4757">●</span> '+(e?'Zona roja':'Red zone')+'</div></div>'+
+  '</div>'+
+  '<div class="chart-card">'+
+    '<div class="chart-title">'+(e?'Penalización hábitos':'Habit penalty')+'</div>'+
+    '<div class="chart-sub">'+(e?'Impacto de hábitos en score (0=sin impacto)':'Habit impact on score (0=no impact)')+'</div>'+
+    '<div class="spark-wrap">'+barsPen()+'</div>'+
+  '</div>'+
+  '</div>';
+}
+
+/* ── RENDER SETTINGS ── */
+function renderSettings(){
+  var e=state.lang==='es';
+  var goals=[{k:'health',icon:'🫀',l:e?'Salud':'Health'},{k:'performance',icon:'🏆',l:e?'Rendimiento':'Performance'},{k:'longevity',icon:'🌿',l:e?'Longevidad':'Longevity'}];
+  var habOpts=[
+    {k:'caffeineLate',icon:'☕',label:e?'Cafeína tardía':'Late caffeine',desc:e?'Café después de las 14h':'Coffee after 2pm'},
+    {k:'alcohol',icon:'🍷',label:e?'Alcohol':'Alcohol',desc:e?'Bebidas alcohólicas en cena':'Drinks at dinner'},
+    {k:'lateDinner',icon:'🌙',label:e?'Cena después 21h':'Dinner after 9pm',desc:e?'Cena tardía regular':'Regular late dinner'}
+  ];
+  document.getElementById('tab-settings').innerHTML=
+  '<div class="settings-wrap">'+
+  '<div class="settings-section">'+
+    '<div class="settings-section-title">'+(e?'Idioma':'Language')+'</div>'+
+    '<div class="setting-row">'+
+      '<div><div class="setting-label">'+(e?'Idioma':'Language')+'</div><div class="setting-desc">Español / English</div></div>'+
+      '<div class="seg-ctrl">'+
+        '<button class="seg-btn'+(state.lang==='es'?' active':'')+'" onclick="setLang(\'es\')">ES</button>'+
+        '<button class="seg-btn'+(state.lang==='en'?' active':'')+'" onclick="setLang(\'en\')">EN</button>'+
+      '</div>'+
+    '</div>'+
+  '</div>'+
+  '<div class="settings-section">'+
+    '<div class="settings-section-title">'+(e?'Objetivo':'Goal')+'</div>'+
+    '<div class="setting-row" style="flex-wrap:wrap;gap:8px">'+
+      '<div><div class="setting-label">'+(e?'Objetivo principal':'Main goal')+'</div></div>'+
+      '<div class="seg-ctrl">'+goals.map(function(g){return '<button class="seg-btn'+(state.goal===g.k?' active':'')+'" onclick="setGoal(\''+g.k+'\')">'+g.icon+' '+g.l+'</button>';}).join('')+'</div>'+
+    '</div>'+
+  '</div>'+
+  '<div class="settings-section">'+
+    '<div class="settings-section-title">'+(e?'Hábitos por defecto':'Default habits')+'</div>'+
+    '<div style="font-size:12px;color:var(--text2);padding:0 4px 8px">'+(e?'Se usan si no registras nada.':'Used if nothing is logged.')+'</div>'+
+    habOpts.map(function(r){
+      return '<div class="ob-toggle-row">'+
+        '<div class="ob-toggle-left">'+
+          '<div class="ob-toggle-icon">'+r.icon+'</div>'+
+          '<div><div class="ob-toggle-label">'+r.label+'</div><div class="ob-toggle-desc">'+r.desc+'</div></div>'+
+        '</div>'+
+        '<div class="toggle'+(defOn(r.k)?' on':'')+'" onclick="toggleDef(\''+r.k+'\')"></div>'+
+      '</div>';
+    }).join('')+
+  '</div>'+
+  '<div class="settings-section">'+
+    '<div class="settings-section-title">'+(e?'Datos':'Data')+'</div>'+
+    '<div class="setting-row">'+
+      '<div><div class="setting-label">ReadyDay v0.1</div><div class="setting-desc">MVP Prototype · Alpha</div></div>'+
+      '<div style="font-size:12px;color:var(--text3)">🌅</div>'+
+    '</div>'+
+    '<button class="btn-danger" onclick="resetData()">'+(e?'🗑 Restablecer todo':'🗑 Reset all data')+'</button>'+
+  '</div>'+
+  '</div>';
+}
+
+window.setLang=function(l){state.lang=l;saveS();renderSettings();if(state.tab==='today')renderToday();if(state.tab==='trends')renderTrends();};
+window.setGoal=function(g){state.goal=g;saveS();renderSettings();};
+window.toggleDef=function(k){
+  var d=state.defaults;
+  if(k==='caffeineLate') d.caffeineLate={cups:defOn(k)?0:2,lastTime:defOn(k)?null:'16:00'};
+  else if(k==='alcohol') d.alcohol={drinks:defOn(k)?0:1};
+  else if(k==='lateDinner') d.lateDinner={ate:!defOn(k),time:'22:00'};
+  saveS();renderSettings();
+};
+window.resetData=function(){
+  if(confirm(state.lang==='es'?'¿Restablecer todos los datos?':'Reset all data?')){
+    try{localStorage.clear();}catch(ex){_mem={};}
+    location.reload();
+  }
+};
+
+/* ── MODAL: WHY ── */
+function openDetail(){
+  var d=getTodayData(),h=getTodayHabits();
+  var rec=calcRec(d,h),str=calcStr(d,h),bal=calcBal(rec,str);
+  var z=getZone(rec,bal),zc=zoneHex(z);
+  var e=state.lang==='es';
+  var hs=hrScore(d.hrResting),hp=habPen(h);
+  var rt=d.recoveryTimeH,rp=rt>=48?85:rt>=36?65:rt>=24?45:rt>=12?25:10;
+  var balColor=bal>=20?'#00D68F':bal>=0?'#FFCC00':'#FF4757';
+
+  var recRows=[
+    {l:'Body Battery (35%)',v:Math.round(.35*d.bodyBattery),raw:d.bodyBattery+'%'},
+    {l:(e?'Anti-Estrés':'Anti-Stress')+' (25%)',v:Math.round(.25*(100-d.stressAvg)),raw:(100-d.stressAvg)+'%'},
+    {l:'FC Score (20%)',v:Math.round(.20*hs),raw:d.hrResting+' bpm'},
+    {l:(e?'Sueño':'Sleep')+' (20%)',v:Math.round(.20*d.sleepScore),raw:d.sleepScore+'%'}
+  ];
+  var strRows=[
+    {l:(e?'Carga actividad':'Activity load')+' (40%)',v:Math.round(.40*d.activityLoad),raw:d.activityLoad+'%'},
+    {l:(e?'Tiempo recuperación':'Recovery time')+' (25%)',v:Math.round(.25*rp),raw:rt+'h'},
+    {l:(e?'Estrés':'Stress')+' (20%)',v:Math.round(.20*d.stressAvg),raw:d.stressAvg+'%'},
+    {l:(e?'Hábitos':'Habits')+' (15%)',v:Math.round(.15*hp),raw:'−'+hp+'pts'}
+  ];
+  function rowsHtml(arr){return arr.map(function(r){
+    return '<div class="detail-row"><div><div class="detail-label">'+r.l+'</div><div class="detail-raw">'+r.raw+'</div></div><div class="detail-val" style="color:var(--p)">+'+r.v+'</div></div>';
+  }).join('');}
+
+  document.getElementById('md-title').textContent=e?'¿Por qué este score?':'Why this score?';
+  document.getElementById('md-body').innerHTML=
+    '<div style="display:flex;gap:10px;margin-bottom:14px">'+
+      '<div style="flex:1;text-align:center;background:var(--card);border-radius:12px;padding:12px;border:1px solid rgba(0,214,143,.15)">'+
+        '<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--text3);letter-spacing:.5px;margin-bottom:4px">'+(e?'Recuperación':'Recovery')+'</div>'+
+        '<div style="font-size:30px;font-weight:900;color:'+zc+'">'+rec+'</div></div>'+
+      '<div style="flex:1;text-align:center;background:var(--card);border-radius:12px;padding:12px;border:1px solid rgba(255,140,66,.15)">'+
+        '<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--text3);letter-spacing:.5px;margin-bottom:4px">'+(e?'Carga':'Strain')+'</div>'+
+        '<div style="font-size:30px;font-weight:900;color:#FF8C42">'+str+'</div></div>'+
+      '<div style="flex:1;text-align:center;background:var(--card);border-radius:12px;padding:12px">'+
+        '<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--text3);letter-spacing:.5px;margin-bottom:4px">Balance</div>'+
+        '<div style="font-size:30px;font-weight:900;color:'+balColor+'">'+(bal>0?'+':'')+bal+'</div></div>'+
+    '</div>'+
+    '<div class="formula-card">Recovery = 0.35×BB + 0.25×(100−Stress)\n+ 0.20×HRscore + 0.20×Sleep</div>'+
+    '<div class="detail-section-title">'+(e?'Desglose Recuperación':'Recovery Breakdown')+'</div>'+rowsHtml(recRows)+
+    '<div class="detail-section-title">'+(e?'Desglose Carga':'Strain Breakdown')+'</div>'+rowsHtml(strRows)+
+    '<div style="margin-top:16px"><button class="btn-primary" onclick="closeModal(\'detail\')">'+(e?'Entendido ✓':'Got it ✓')+'</button></div>';
+  openModal('detail');
+}
+window.openDetail=openDetail;
+
+/* ── MODAL: HABITS ── */
+var _habEdits=null;
+function openHab(){
+  var h=getTodayHabits();
+  _habEdits={
+    caffeineLate:{cups:h.caffeineLate&&typeof h.caffeineLate==='object'?h.caffeineLate.cups||0:0,lastTime:h.caffeineLate&&typeof h.caffeineLate==='object'?h.caffeineLate.lastTime||null:null},
+    alcohol:{drinks:h.alcohol&&typeof h.alcohol==='object'?h.alcohol.drinks||0:0},
+    lateDinner:{ate:h.lateDinner&&typeof h.lateDinner==='object'?h.lateDinner.ate||false:false,time:h.lateDinner&&typeof h.lateDinner==='object'?h.lateDinner.time||'22:00':'22:00'}
+  };
+  var e=state.lang==='es';
+  document.getElementById('hab-title').textContent=e?'Hábitos de ayer':'Yesterday\'s habits';
+  _renderHabModal();
+  openModal('hab');
+}
+window.openHab=openHab;
+
+function _renderHabModal(){
+  var e=_habEdits,es=state.lang==='es';
+  var cups=e.caffeineLate.cups||0,drinks=e.alcohol.drinks||0;
+  var dinAte=e.lateDinner.ate||false,dinTime=e.lateDinner.time||'22:00';
+  var cImp=cups>0?'−'+Math.min(cups*8,28)+'pts':'';
+  var aImp=drinks>0?'−'+Math.min(drinks*13,35)+'pts':'';
+  var total=habPen(e);
+  var cafTimes=['13:00','14:00','15:00','16:00','17:00','18:00','19:00'];
+  var dinTimes=['21:00','22:00','23:00+'];
+
+  document.getElementById('hab-body').innerHTML=
+  '<div class="hab-total">'+
+    '<div class="hab-total-lbl">'+(es?'Impacto total en score:':'Total score impact:')+'</div>'+
+    '<div class="hab-total-val">'+(total>0?'−'+total+' pts':(es?'Sin impacto ✓':'No impact ✓'))+'</div>'+
+  '</div>'+
+  '<div class="hab-section">'+
+    '<div class="hab-section-title">☕ '+(es?'Cafeína tardía':'Late caffeine')+'</div>'+
+    '<div class="hab-row">'+
+      '<div class="hab-row-left"><div class="hab-row-name">'+(es?'Cafés / tés cafeína':'Caffeinated drinks')+'</div><div class="hab-row-impact">'+cImp+'</div></div>'+
+      '<div class="stepper"><button class="step-btn" onclick="habStep(\'cups\',-1)">−</button><div class="step-val">'+cups+'</div><button class="step-btn" onclick="habStep(\'cups\',1)">+</button></div>'+
+    '</div>'+
+    (cups>0?'<div class="time-chips">'+cafTimes.map(function(t){return '<div class="time-chip'+(e.caffeineLate.lastTime===t?' sel':'')+'" onclick="habCafTime(\''+t+'\')">'+t+'</div>';}).join('')+'</div>':'')+
+  '</div>'+
+  '<div class="hab-section">'+
+    '<div class="hab-section-title">🍷 '+(es?'Alcohol':'Alcohol')+'</div>'+
+    '<div class="hab-row">'+
+      '<div class="hab-row-left"><div class="hab-row-name">'+(es?'Bebidas alcohólicas':'Alcoholic drinks')+'</div><div class="hab-row-impact">'+aImp+'</div></div>'+
+      '<div class="stepper"><button class="step-btn" onclick="habStep(\'drinks\',-1)">−</button><div class="step-val">'+drinks+'</div><button class="step-btn" onclick="habStep(\'drinks\',1)">+</button></div>'+
+    '</div>'+
+  '</div>'+
+  '<div class="hab-section">'+
+    '<div class="hab-section-title">🌙 '+(es?'Cena tardía':'Late dinner')+'</div>'+
+    '<div class="hab-row">'+
+      '<div class="hab-row-left"><div class="hab-row-name">'+(es?'¿Cenaste después de las 21h?':'Did you eat after 9pm?')+'</div></div>'+
+      '<div class="toggle'+(dinAte?' on':'')+'" onclick="habDin('+(dinAte?'false':'true')+')"></div>'+
+    '</div>'+
+    (dinAte?'<div class="time-chips">'+dinTimes.map(function(t){return '<div class="time-chip'+(dinTime===t?' sel':'')+'" onclick="habDinTime(\''+t+'\')">'+t+'</div>';}).join('')+'</div>':'')+
+  '</div>'+
+  '<button class="btn-primary" onclick="saveHab()">'+(es?'Guardar':'Save')+'</button>';
+}
+
+window.habStep=function(f,delta){
+  if(f==='cups') _habEdits.caffeineLate.cups=Math.max(0,Math.min(5,(_habEdits.caffeineLate.cups||0)+delta));
+  else _habEdits.alcohol.drinks=Math.max(0,Math.min(8,(_habEdits.alcohol.drinks||0)+delta));
+  _renderHabModal();
+};
+window.habCafTime=function(tv){_habEdits.caffeineLate.lastTime=tv;_renderHabModal();};
+window.habDin=function(v){
+  _habEdits.lateDinner.ate=(v==='true'||v===true);
+  if(_habEdits.lateDinner.ate&&!_habEdits.lateDinner.time) _habEdits.lateDinner.time='22:00';
+  _renderHabModal();
+};
+window.habDinTime=function(tv){_habEdits.lateDinner.time=tv;_renderHabModal();};
+window.saveHab=function(){
+  state.todayOv={
+    caffeineLate:{cups:_habEdits.caffeineLate.cups,lastTime:_habEdits.caffeineLate.lastTime},
+    alcohol:{drinks:_habEdits.alcohol.drinks},
+    lateDinner:{ate:_habEdits.lateDinner.ate,time:_habEdits.lateDinner.time}
+  };
+  saveS();closeModal('hab');renderToday();
+};
+
+/* ── MODAL: FACTOR DETAIL ── */
+window.openFactor=function(k){
+  var d=getTodayData();
+  var e=state.lang==='es';
+  var info={
+    bb:{icon:'🔋',name:'Body Battery',val:d.bodyBattery+'%',desc:e?'El Body Battery de Garmin mide la energía disponible basándose en HRV, sueño y actividad. Sobre 70 → esfuerzo elevado posible. Bajo 30 → prioriza recuperación.':'Garmin\'s Body Battery measures available energy based on HRV, sleep, and activity. Above 70 → high effort possible. Below 30 → prioritize recovery.'},
+    sleep:{icon:'😴',name:e?'Sueño':'Sleep',val:d.sleepScore+'/100',desc:e?'Combina duración ('+d.sleepHours+'h) y calidad. El sueño profundo es el factor más importante para la recuperación muscular y cognitiva. 7h+ con buena calidad = score alto.':'Combines duration ('+d.sleepHours+'h) and quality. Deep sleep is the most important factor for muscular and cognitive recovery. 7h+ with good quality = high score.'},
+    stress:{icon:'🧠',name:e?'Estrés':'Stress',val:d.stressAvg+'%',desc:e?'El estrés acumulado impacta directamente tu recuperación. Sobre 60% reduce el score de recuperación significativamente. Técnicas de respiración y meditación lo mejoran.':'Accumulated stress directly impacts your recovery. Above 60% significantly reduces the recovery score. Breathing techniques and meditation improve it.'},
+    hr:{icon:'❤️',name:e?'FC Reposo':'Resting HR',val:d.hrResting+' bpm',desc:e?'La frecuencia cardíaca en reposo indica cuánto trabaja tu corazón. Bajo 55 bpm = excelente. Entre 55-65 = normal. Sobre 70 = posible fatiga o estrés.':'Resting heart rate indicates how hard your heart is working. Below 55 bpm = excellent. 55-65 = normal. Above 70 = possible fatigue or stress.'},
+    act:{icon:'⚡',name:e?'Carga Actividad':'Activity Load',val:d.activityLoad+'%',desc:e?'Esfuerzo acumulado de la actividad de ayer. Cargas altas sin recuperación suficiente aumentan el riesgo de sobreentrenamiento. Ideal alternar días altos y bajos.':'Accumulated effort from yesterday\'s activity. High loads without sufficient recovery increase overtraining risk. Ideal to alternate high and low days.'},
+    rt:{icon:'⏱️',name:e?'Tiempo Recuperación':'Recovery Time',val:d.recoveryTimeH+'h',desc:e?'Tiempo estimado por Garmin hasta recuperación completa basado en esfuerzo reciente, HRV y sueño. Más de 48h indica sesión muy intensa reciente.':'Time estimated by Garmin until full recovery based on recent effort, HRV, and sleep. Over 48h indicates a very intense recent session.'}
+  };
+  var f=info[k]||{icon:'📊',name:k,val:'—',desc:''};
+  document.getElementById('mf-title').textContent=f.name;
+  document.getElementById('mf-body').innerHTML=
+    '<div style="text-align:center;padding:8px 0 18px">'+
+      '<div style="font-size:42px;margin-bottom:10px">'+f.icon+'</div>'+
+      '<div style="font-size:38px;font-weight:900;letter-spacing:-2px;color:var(--p)">'+f.val+'</div>'+
+    '</div>'+
+    '<div style="font-size:14px;line-height:1.65;color:rgba(255,255,255,.75)">'+f.desc+'</div>'+
+    '<div style="margin-top:20px"><button class="btn-secondary" style="width:100%" onclick="closeModal(\'factor\')">'+(e?'Cerrar':'Close')+'</button></div>';
+  openModal('factor');
+};
+
+/* ── MODAL HELPERS ── */
+function openModal(id){document.getElementById('modal-'+id+'-bg').classList.add('open');}
+window.openModal=openModal;
+function closeModal(id){document.getElementById('modal-'+id+'-bg').classList.remove('open');}
+window.closeModal=closeModal;
+
+/* ── ONBOARDING ── */
+function renderOnboarding(){
+  document.getElementById('onboarding').style.display='block';
+  document.getElementById('app').style.display='none';
+  var e=state.lang==='es';
+  var s=state.obStep||1;
+  var dots=[1,2,3].map(function(n){
+    var cls='ob-dot'+(s>n?' done':s===n?' active':'');
+    return '<div class="'+cls+'"></div>';
+  }).join('');
+  var html='';
+
+  if(s===1){
+    html=
+    '<div class="ob-title">'+(e?'¿En qué idioma prefieres?':'Which language do you prefer?')+'</div>'+
+    '<div class="ob-sub">'+(e?'Puedes cambiarlo en ajustes.':'You can change this in settings.')+'</div>'+
+    ['es','en'].map(function(l){
+      var sel=state.lang===l;
+      return '<div class="ob-option'+(sel?' sel':'')+'" onclick="obSetLang(\''+l+'\')">'+
+        '<div class="ob-option-icon">'+(l==='es'?'🇪🇸':'🇺🇸')+'</div>'+
+        '<div class="ob-option-text"><div class="ob-option-name">'+(l==='es'?'Español':'English')+'</div><div class="ob-option-desc">'+(l==='es'?'Español latinoamericano':'American English')+'</div></div>'+
+        '<div class="ob-check">'+(sel?'✓':'')+'</div></div>';
+    }).join('')+
+    '<button class="ob-cta" onclick="obNext()">'+(e?'Continuar →':'Continue →')+'</button>';
+  } else if(s===2){
+    var goals=[{k:'health',icon:'🫀',n:e?'Salud general':'General health',d:e?'Sentirme bien y vivir mejor':'Feel good and live better'},{k:'performance',icon:'🏆',n:e?'Rendimiento deportivo':'Athletic performance',d:e?'Mejorar marcas y entrenar más':'Improve times and train more'},{k:'longevity',icon:'🌿',n:e?'Longevidad':'Longevity',d:e?'Cuidar mi salud a largo plazo':'Take care of long-term health'}];
+    html=
+    '<div class="ob-title">'+(e?'¿Cuál es tu objetivo?':'What\'s your goal?')+'</div>'+
+    '<div class="ob-sub">'+(e?'Personaliza tus recomendaciones.':'Personalizes your recommendations.')+'</div>'+
+    goals.map(function(g){
+      var sel=state.goal===g.k;
+      return '<div class="ob-option'+(sel?' sel':'')+'" onclick="obSetGoal(\''+g.k+'\')">'+
+        '<div class="ob-option-icon">'+g.icon+'</div>'+
+        '<div class="ob-option-text"><div class="ob-option-name">'+g.n+'</div><div class="ob-option-desc">'+g.d+'</div></div>'+
+        '<div class="ob-check">'+(sel?'✓':'')+'</div></div>';
+    }).join('')+
+    '<button class="ob-cta" onclick="obNext()">'+(e?'Continuar →':'Continue →')+'</button>';
+  } else {
+    var habs=[
+      {k:'caffeineLate',icon:'☕',l:e?'Cafeína tardía':'Late caffeine',d:e?'Suelo tomar café después de las 14h':'I usually drink coffee after 2pm'},
+      {k:'alcohol',icon:'🍷',l:e?'Alcohol en cena':'Alcohol at dinner',d:e?'Tomo bebidas alcohólicas con regularidad':'I drink alcohol regularly'},
+      {k:'lateDinner',icon:'🌙',l:e?'Cena después de 21h':'Dinner after 9pm',d:e?'Suelo cenar tarde con regularidad':'I regularly eat dinner late'}
+    ];
+    html=
+    '<div class="ob-title">'+(e?'¿Tienes estos hábitos?':'Do you have these habits?')+'</div>'+
+    '<div class="ob-sub">'+(e?'Afectan tu score diario.':'They affect your daily score.')+'</div>'+
+    habs.map(function(r){
+      return '<div class="ob-toggle-row">'+
+        '<div class="ob-toggle-left">'+
+          '<div class="ob-toggle-icon">'+r.icon+'</div>'+
+          '<div><div class="ob-toggle-label">'+r.l+'</div><div class="ob-toggle-desc">'+r.d+'</div></div>'+
+        '</div>'+
+        '<div class="toggle'+(defOn(r.k)?' on':'')+'" onclick="obToggleHab(\''+r.k+'\')"></div>'+
+      '</div>';
+    }).join('')+
+    '<button class="ob-cta" onclick="finishOb()">'+(e?'Comenzar 🚀':'Start 🚀')+'</button>';
+  }
+  document.getElementById('ob-inner').innerHTML='<div class="ob-step-ind">'+dots+'</div>'+html;
+}
+
+window.obSetLang=function(l){state.lang=l;saveS();renderOnboarding();};
+window.obSetGoal=function(g){state.goal=g;saveS();renderOnboarding();};
+window.obToggleHab=function(k){
+  var d=state.defaults;
+  if(k==='caffeineLate') d.caffeineLate={cups:defOn(k)?0:2,lastTime:defOn(k)?null:'16:00'};
+  else if(k==='alcohol') d.alcohol={drinks:defOn(k)?0:1};
+  else if(k==='lateDinner') d.lateDinner={ate:!defOn(k),time:'22:00'};
+  saveS();renderOnboarding();
+};
+window.obNext=function(){state.obStep=(state.obStep||1)+1;saveS();renderOnboarding();};
+window.finishOb=function(){state.onboardingDone=true;state.obStep=1;saveS();startApp();};
+
+/* ── START APP ── */
+function startApp(){
+  document.getElementById('onboarding').style.display='none';
+  document.getElementById('app').style.display='block';
+  updateNavLabels();
+  switchTab('today');
+}
+
+/* ── BOOT — no tap needed, auto-advance ── */
+loadS();
+setTimeout(function(){
+  document.getElementById('splash').classList.add('out');
+  setTimeout(function(){
+    document.getElementById('splash').style.display='none';
+    if(!state.onboardingDone){
+      state.obStep=state.obStep||1;
+      renderOnboarding();
+    } else {
+      startApp();
+    }
+  },420);
+},1600);
+
+})();
+</script>
+</body>
+</html>
