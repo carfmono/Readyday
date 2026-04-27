@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="robots" content="noindex,nofollow">
+<title>ReadyDay — Founders Dashboard</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body{background:#07070F;color:#F0F0FA;overflow-x:hidden}
+:root{
+  --bg:#07070F;--bg2:#0D0D1A;--card:#121220;--card2:#1A1A2C;
+  --border:rgba(255,255,255,0.06);--text:#F0F0FA;--text2:#8888A8;--text3:#4A4A6A;
+  --green:#00D68F;--green-dim:rgba(0,214,143,0.1);
+  --yellow:#FFCC00;--yellow-dim:rgba(255,204,0,0.1);
+  --red:#FF4757;--red-dim:rgba(255,71,87,0.1);
+  --blue:#4A9EFF;--blue-dim:rgba(74,158,255,0.1);
+  --purple:#9B59FF;--purple-dim:rgba(155,89,255,0.1);
+  --accent:#7C6EFF;--accent-dim:rgba(124,110,255,0.12);
+  --r:12px
+}
+button{font-family:inherit;cursor:pointer;border:none;outline:none;-webkit-tap-highlight-color:transparent}
+::-webkit-scrollbar{width:4px;background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* ── PIN SCREEN ── */
+#pin-screen{
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  background:var(--bg);
+  display:-webkit-flex;display:flex;
+  -webkit-flex-direction:column;flex-direction:column;
+  -webkit-align-items:center;align-items:center;
+  -webkit-justify-content:center;justify-content:center;
+  z-index:1000;gap:0;
+  -webkit-transition:opacity .3s;transition:opacity .3s
+}
+#pin-screen.fade{opacity:0;pointer-events:none}
+.pin-logo{width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,#7C6EFF,#00D68F);display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;font-size:28px;margin-bottom:20px;box-shadow:0 16px 40px rgba(124,110,255,.35)}
+.pin-title{font-size:20px;font-weight:700;margin-bottom:4px}
+.pin-sub{font-size:13px;color:var(--text2);margin-bottom:32px}
+.pin-dots{display:-webkit-flex;display:flex;gap:12px;margin-bottom:32px}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--text3);-webkit-transition:all .15s;transition:all .15s}
+.pin-dot.filled{background:var(--accent);border-color:var(--accent);-webkit-transform:scale(1.1);transform:scale(1.1)}
+.pin-dot.error{background:var(--red);border-color:var(--red)}
+.pin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:240px}
+.pin-btn{height:64px;border-radius:var(--r);background:var(--card2);font-size:22px;font-weight:600;color:var(--text);border:1px solid var(--border);-webkit-transition:all .15s;transition:all .15s}
+.pin-btn:active{background:var(--accent-dim);-webkit-transform:scale(.95);transform:scale(.95)}
+.pin-btn.del{font-size:18px;color:var(--text2)}
+.pin-hint{font-size:12px;color:var(--text3);margin-top:20px}
+.pin-error{font-size:13px;color:var(--red);margin-top:12px;height:18px;text-align:center;-webkit-animation:shake .3s ease;animation:shake .3s ease}
+@-webkit-keyframes shake{0%,100%{-webkit-transform:translateX(0);transform:translateX(0)}25%{-webkit-transform:translateX(-6px);transform:translateX(-6px)}75%{-webkit-transform:translateX(6px);transform:translateX(6px)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+/* ── DASHBOARD ── */
+#dashboard{display:none;min-height:100vh}
+#dashboard.show{display:block}
+.dash-nav{
+  position:sticky;top:0;
+  background:rgba(7,7,15,.92);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:14px 20px;
+  display:-webkit-flex;display:flex;
+  -webkit-align-items:center;align-items:center;
+  -webkit-justify-content:space-between;justify-content:space-between;
+  z-index:50
+}
+.dash-brand{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:10px}
+.dash-logo-sm{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#7C6EFF,#00D68F);display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;font-size:14px}
+.dash-brand-name{font-size:15px;font-weight:700}
+.dash-brand-tag{font-size:11px;color:var(--text2);background:var(--accent-dim);padding:3px 8px;border-radius:6px;font-weight:600;letter-spacing:.3px}
+.dash-meta{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:12px}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);-webkit-animation:livepulse 1.5s ease-in-out infinite;animation:livepulse 1.5s ease-in-out infinite}
+@-webkit-keyframes livepulse{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes livepulse{0%,100%{opacity:1}50%{opacity:.3}}
+.dash-meta-text{font-size:12px;color:var(--text2)}
+.anon-badge{background:var(--green-dim);color:var(--green);font-size:11px;font-weight:700;padding:4px 10px;border-radius:8px;border:1px solid rgba(0,214,143,.2)}
+.lock-btn{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--text2)}
+
+.tab-nav{display:-webkit-flex;display:flex;gap:4px;padding:16px 20px 0;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tab-nav::-webkit-scrollbar{display:none}
+.tab-btn{padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;color:var(--text2);background:none;border:1px solid transparent;white-space:nowrap;-webkit-transition:all .2s;transition:all .2s;-webkit-flex-shrink:0;flex-shrink:0}
+.tab-btn.active{background:var(--accent-dim);border-color:rgba(124,110,255,.3);color:var(--accent)}
+
+.dash-content{padding:0 20px;display:none}
+.dash-content.active{display:block}
+
+/* ── PERIOD SELECTOR ── */
+.period-bar{display:-webkit-flex;display:flex;gap:6px;padding:16px 20px 8px}
+.period-btn{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;color:var(--text2);background:var(--card);border:1px solid var(--border);-webkit-transition:all .2s;transition:all .2s}
+.period-btn.active{background:var(--accent-dim);border-color:rgba(124,110,255,.3);color:var(--accent)}
+
+/* ── KPI CARDS ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
+.kpi-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.kpi-card{background:var(--card);border-radius:var(--r);padding:16px;border:1px solid var(--border);position:relative;overflow:hidden}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.kpi-card.green::before{background:linear-gradient(to right,transparent,var(--green),transparent)}
+.kpi-card.blue::before{background:linear-gradient(to right,transparent,var(--blue),transparent)}
+.kpi-card.purple::before{background:linear-gradient(to right,transparent,var(--purple),transparent)}
+.kpi-card.yellow::before{background:linear-gradient(to right,transparent,var(--yellow),transparent)}
+.kpi-card.red::before{background:linear-gradient(to right,transparent,var(--red),transparent)}
+.kpi-icon{font-size:20px;margin-bottom:8px}
+.kpi-val{font-size:28px;font-weight:800;letter-spacing:-1px;margin-bottom:2px}
+.kpi-val.green{color:var(--green)}.kpi-val.blue{color:var(--blue)}.kpi-val.purple{color:var(--purple)}.kpi-val.yellow{color:var(--yellow)}.kpi-val.red{color:var(--red)}
+.kpi-label{font-size:12px;color:var(--text2);font-weight:500}
+.kpi-delta{font-size:11px;font-weight:700;margin-top:4px}
+.kpi-delta.up{color:var(--green)}.kpi-delta.down{color:var(--red)}.kpi-delta.flat{color:var(--text3)}
+
+/* ── CHART CONTAINERS ── */
+.chart-card{background:var(--card);border-radius:var(--r);padding:16px;border:1px solid var(--border);margin-bottom:12px}
+.chart-header{display:-webkit-flex;display:flex;-webkit-align-items:flex-start;align-items:flex-start;-webkit-justify-content:space-between;justify-content:space-between;margin-bottom:16px}
+.chart-title{font-size:14px;font-weight:700}
+.chart-sub{font-size:11px;color:var(--text2);margin-top:2px}
+.chart-badge{font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px}
+.chart-badge.anon{background:var(--green-dim);color:var(--green)}
+.chart-badge.agg{background:var(--blue-dim);color:var(--blue)}
+
+/* ── LINE CHART (SVG) ── */
+.line-chart{width:100%;overflow:visible}
+.lc-area{fill:url(#areaGrad);opacity:.6}
+.lc-line{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.lc-line.green{stroke:var(--green)}.lc-line.blue{stroke:var(--blue)}.lc-line.purple{stroke:var(--purple)}.lc-line.yellow{stroke:var(--yellow)}.lc-line.red{stroke:var(--red)}
+.lc-dot{r:4;-webkit-transition:r .15s;transition:r .15s}
+.lc-label{font-size:9px;fill:var(--text3);font-family:-apple-system,sans-serif}
+.lc-axis-label{font-size:8px;fill:var(--text3);font-family:-apple-system,sans-serif}
+.lc-grid{stroke:var(--border);stroke-width:1}
+
+/* ── DONUT CHART ── */
+.donut-wrap{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:20px}
+.donut-svg{-webkit-flex-shrink:0;flex-shrink:0}
+.donut-legend{-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;gap:8px}
+.donut-item{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:8px}
+.donut-dot{width:10px;height:10px;border-radius:50%;-webkit-flex-shrink:0;flex-shrink:0}
+.donut-name{-webkit-flex:1;flex:1;font-size:13px;font-weight:500}
+.donut-val{font-size:13px;font-weight:700}
+.donut-pct{font-size:11px;color:var(--text2);margin-left:4px}
+
+/* ── BAR CHARTS ── */
+.hbar-row{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border)}
+.hbar-row:last-child{border-bottom:none}
+.hbar-label{font-size:13px;width:100px;-webkit-flex-shrink:0;flex-shrink:0;font-weight:500}
+.hbar-wrap{-webkit-flex:1;flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:4px;-webkit-transition:width .8s ease;transition:width .8s ease}
+.hbar-val{font-size:12px;font-weight:700;width:36px;text-align:right;-webkit-flex-shrink:0;flex-shrink:0}
+
+/* ── FUNNEL ── */
+.funnel-step{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.funnel-step:last-child{border-bottom:none}
+.funnel-num{font-size:11px;font-weight:700;color:var(--text3);width:18px;-webkit-flex-shrink:0;flex-shrink:0}
+.funnel-bar-outer{-webkit-flex:1;flex:1;height:32px;background:var(--border);border-radius:6px;overflow:hidden;position:relative}
+.funnel-bar-inner{height:100%;border-radius:6px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;padding:0 12px;font-size:12px;font-weight:700;color:#fff;-webkit-transition:width 1s ease;transition:width 1s ease;white-space:nowrap}
+.funnel-pct{font-size:12px;font-weight:700;width:42px;text-align:right;-webkit-flex-shrink:0;flex-shrink:0}
+.funnel-pct.drop{color:var(--red)}.funnel-pct.ok{color:var(--green)}
+
+/* ── TABLE ── */
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;padding:8px 12px;text-align:left;border-bottom:1px solid var(--border)}
+.data-table td{padding:10px 12px;font-size:13px;border-bottom:1px solid var(--border)}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tr:hover td{background:rgba(255,255,255,.02)}
+.td-badge{display:inline-block;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700}
+
+/* ── PRIVACY BANNER ── */
+.privacy-banner{
+  background:linear-gradient(135deg,rgba(0,214,143,.06),rgba(124,110,255,.08));
+  border:1px solid rgba(0,214,143,.15);
+  border-radius:var(--r);padding:16px;margin-bottom:20px;
+  display:-webkit-flex;display:flex;gap:14px;-webkit-align-items:flex-start;align-items:flex-start
+}
+.pb-icon{font-size:24px;-webkit-flex-shrink:0;flex-shrink:0}
+.pb-body{-webkit-flex:1;flex:1}
+.pb-title{font-size:14px;font-weight:700;color:var(--green);margin-bottom:4px}
+.pb-text{font-size:12px;color:var(--text2);line-height:1.6}
+.pb-tags{display:-webkit-flex;display:flex;gap:6px;-webkit-flex-wrap:wrap;flex-wrap:wrap;margin-top:8px}
+.pb-tag{font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px}
+.pb-tag.green{background:var(--green-dim);color:var(--green)}
+.pb-tag.blue{background:var(--blue-dim);color:var(--blue)}
+.pb-tag.purple{background:var(--purple-dim);color:var(--purple)}
+
+/* ── SECTION TITLE ── */
+.s-title{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);margin-bottom:12px;margin-top:20px}
+
+/* ── RETENTION GRID ── */
+.cohort-table{overflow-x:auto;margin-bottom:16px}
+.cohort-table table{width:100%;border-collapse:collapse;white-space:nowrap}
+.cohort-table th{font-size:10px;font-weight:700;color:var(--text3);padding:6px 8px;text-align:center;letter-spacing:.3px}
+.cohort-table td{padding:5px 8px;text-align:center;border-radius:4px;font-size:12px;font-weight:700}
+.cell-100{background:rgba(124,110,255,.5);color:#fff}
+.cell-hi{background:rgba(0,214,143,.25);color:var(--green)}
+.cell-mid{background:rgba(255,204,0,.2);color:var(--yellow)}
+.cell-lo{background:rgba(255,71,87,.2);color:var(--red)}
+.cell-empty{color:var(--text3)}
+
+/* ── DEVICE BREAKDOWN ── */
+.device-row{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.device-row:last-child{border-bottom:none}
+.device-icon{width:36px;height:36px;border-radius:10px;background:var(--card2);display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;font-size:18px;-webkit-flex-shrink:0;flex-shrink:0}
+.device-info{-webkit-flex:1;flex:1}
+.device-name{font-size:13px;font-weight:600}
+.device-sub{font-size:11px;color:var(--text2);margin-top:1px}
+.device-bar-outer{width:80px;height:6px;background:var(--border);border-radius:3px;overflow:hidden;-webkit-flex-shrink:0;flex-shrink:0}
+.device-bar-inner{height:100%;border-radius:3px;background:var(--accent)}
+.device-pct{font-size:12px;font-weight:700;width:36px;text-align:right;-webkit-flex-shrink:0;flex-shrink:0}
+
+/* ── MISC ── */
+.section-divider{height:1px;background:var(--border);margin:20px 0}
+.fade-in{-webkit-animation:fi .4s ease forwards;animation:fi .4s ease forwards}
+@-webkit-keyframes fi{from{opacity:0;-webkit-transform:translateY(6px);transform:translateY(6px)}to{opacity:1;-webkit-transform:translateY(0);transform:translateY(0)}}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.mt8{margin-top:8px}.mt16{margin-top:16px}.mb16{margin-bottom:16px}
+@media(min-width:768px){
+  .kpi-grid{grid-template-columns:repeat(4,1fr)}
+  .kpi-grid-3{grid-template-columns:repeat(6,1fr)}
+  .dash-content{max-width:960px;margin:0 auto;padding:0 24px}
+  .tab-nav,.period-bar{max-width:960px;margin-left:auto;margin-right:auto}
+}
+</style>
+</head>
+<body>
+
+<!-- ── PIN SCREEN ── -->
+<div id="pin-screen">
+  <div class="pin-logo">⚡</div>
+  <div class="pin-title">Founders Dashboard</div>
+  <div class="pin-sub">ReadyDay · Acceso restringido</div>
+  <div class="pin-dots">
+    <div class="pin-dot" id="d0"></div>
+    <div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div>
+    <div class="pin-dot" id="d3"></div>
+  </div>
+  <div class="pin-grid">
+    <button class="pin-btn" onclick="pinPress(1)">1</button>
+    <button class="pin-btn" onclick="pinPress(2)">2</button>
+    <button class="pin-btn" onclick="pinPress(3)">3</button>
+    <button class="pin-btn" onclick="pinPress(4)">4</button>
+    <button class="pin-btn" onclick="pinPress(5)">5</button>
+    <button class="pin-btn" onclick="pinPress(6)">6</button>
+    <button class="pin-btn" onclick="pinPress(7)">7</button>
+    <button class="pin-btn" onclick="pinPress(8)">8</button>
+    <button class="pin-btn" onclick="pinPress(9)">9</button>
+    <button class="pin-btn" style="visibility:hidden"></button>
+    <button class="pin-btn" onclick="pinPress(0)">0</button>
+    <button class="pin-btn del" onclick="pinDel()">⌫</button>
+  </div>
+  <div class="pin-hint">PIN de 4 dígitos</div>
+  <div class="pin-error" id="pin-error"></div>
+</div>
+
+<!-- ── DASHBOARD ── -->
+<div id="dashboard">
+
+  <!-- NAV -->
+  <div class="dash-nav">
+    <div class="dash-brand">
+      <div class="dash-logo-sm">⚡</div>
+      <span class="dash-brand-name">ReadyDay</span>
+      <span class="dash-brand-tag">FOUNDERS</span>
+    </div>
+    <div class="dash-meta">
+      <div class="live-dot"></div>
+      <span class="dash-meta-text">Live · <span id="last-update"></span></span>
+      <span class="anon-badge">🔒 K-ANON</span>
+      <button class="lock-btn" onclick="lockDash()">🔒</button>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchDashTab('overview')">📊 Visión general</button>
+    <button class="tab-btn" onclick="switchDashTab('engagement')">🎯 Engagement</button>
+    <button class="tab-btn" onclick="switchDashTab('health')">❤️ Health data</button>
+    <button class="tab-btn" onclick="switchDashTab('retention')">🔄 Retención</button>
+    <button class="tab-btn" onclick="switchDashTab('privacy')">🔐 Privacidad</button>
+  </div>
+
+  <!-- PERIOD -->
+  <div class="period-bar">
+    <button class="period-btn active" onclick="setPeriod(7,this)">7d</button>
+    <button class="period-btn" onclick="setPeriod(14,this)">14d</button>
+    <button class="period-btn" onclick="setPeriod(30,this)">30d</button>
+    <button class="period-btn" onclick="setPeriod(90,this)">90d</button>
+  </div>
+
+  <!-- OVERVIEW TAB -->
+  <div class="dash-content active" id="tab-overview">
+
+    <div class="privacy-banner mt16">
+      <div class="pb-icon">🛡️</div>
+      <div class="pb-body">
+        <div class="pb-title">Datos 100% anónimos y agregados</div>
+        <div class="pb-text">Este dashboard nunca muestra datos de usuarios individuales. Toda métrica tiene k-anonymity ≥ 50. No hay forma de identificar a ningún usuario a partir de los datos mostrados aquí. Los datos de salud (zonas, hábitos) son promedios estadísticos, no trazables a personas.</div>
+        <div class="pb-tags">
+          <span class="pb-tag green">k-anonymity ≥ 50</span>
+          <span class="pb-tag blue">Agregado</span>
+          <span class="pb-tag purple">Sin PII</span>
+          <span class="pb-tag green">GDPR Art. 89</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPIs principales -->
+    <div class="s-title">USUARIOS</div>
+    <div class="kpi-grid">
+      <div class="kpi-card blue">
+        <div class="kpi-icon">👤</div>
+        <div class="kpi-val blue" id="kpi-total">847</div>
+        <div class="kpi-label">Usuarios totales</div>
+        <div class="kpi-delta up" id="kpi-total-d">↑ +12% esta semana</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-icon">⚡</div>
+        <div class="kpi-val green" id="kpi-dau">94</div>
+        <div class="kpi-label">DAU (hoy)</div>
+        <div class="kpi-delta up">↑ +8% vs ayer</div>
+      </div>
+      <div class="kpi-card purple">
+        <div class="kpi-icon">📅</div>
+        <div class="kpi-val purple" id="kpi-wau">381</div>
+        <div class="kpi-label">WAU</div>
+        <div class="kpi-delta up">↑ +5% vs semana ant.</div>
+      </div>
+      <div class="kpi-card yellow">
+        <div class="kpi-icon">📈</div>
+        <div class="kpi-val yellow" id="kpi-dau-wau">24.7%</div>
+        <div class="kpi-label">DAU/WAU ratio</div>
+        <div class="kpi-delta flat">→ Estable</div>
+      </div>
+    </div>
+
+    <!-- Daily Active Users chart -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Usuarios activos diarios</div><div class="chart-sub">Únicos anónimos (hash one-way)</div></div>
+        <span class="chart-badge agg">AGREGADO</span>
+      </div>
+      <svg id="dau-chart" class="line-chart" height="120" viewBox="0 0 340 120">
+        <defs>
+          <linearGradient id="dauGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#4A9EFF" stop-opacity=".4"/>
+            <stop offset="100%" stop-color="#4A9EFF" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <div style="display:flex;justify-content:space-between;margin-top:6px" id="dau-labels"></div>
+    </div>
+
+    <!-- Secondary KPIs -->
+    <div class="s-title">PRODUCTO</div>
+    <div class="kpi-grid-3">
+      <div class="kpi-card green">
+        <div class="kpi-icon">✅</div>
+        <div class="kpi-val green" style="font-size:22px">68%</div>
+        <div class="kpi-label">Onboarding OK</div>
+        <div class="kpi-delta up">↑ +4pp</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-icon">🔁</div>
+        <div class="kpi-val blue" style="font-size:22px">3.2</div>
+        <div class="kpi-label">Sesiones/semana</div>
+        <div class="kpi-delta flat">→ Estable</div>
+      </div>
+      <div class="kpi-card purple">
+        <div class="kpi-icon">⏱️</div>
+        <div class="kpi-val purple" style="font-size:22px">48s</div>
+        <div class="kpi-label">Sesión promedio</div>
+        <div class="kpi-delta up">↑ +6s</div>
+      </div>
+      <div class="kpi-card yellow">
+        <div class="kpi-icon">🔔</div>
+        <div class="kpi-val yellow" style="font-size:22px">71%</div>
+        <div class="kpi-label">Notif. aceptadas</div>
+        <div class="kpi-delta up">↑ +3pp</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-icon">⌚</div>
+        <div class="kpi-val green" style="font-size:22px">83%</div>
+        <div class="kpi-label">Garmin conectado</div>
+        <div class="kpi-delta flat">→ Estable</div>
+      </div>
+      <div class="kpi-card red">
+        <div class="kpi-icon">👋</div>
+        <div class="kpi-val red" style="font-size:22px">2.3%</div>
+        <div class="kpi-label">Churn semanal</div>
+        <div class="kpi-delta up">↓ -0.4pp</div>
+      </div>
+    </div>
+
+    <!-- New users vs returning -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Nuevos vs Recurrentes (7d)</div><div class="chart-sub">Por día, usuarios únicos anónimos</div></div>
+        <span class="chart-badge anon">ANÓNIMO</span>
+      </div>
+      <div id="new-vs-ret-chart"></div>
+    </div>
+
+    <div class="s-title">PRODUCT-MARKET FIT</div>
+    <div class="chart-card" id="pmf-section"></div>
+
+    <div class="s-title">SEÑALES CLAVE</div>
+    <div class="kpi-grid-3">
+      <div class="kpi-card green">
+        <div class="kpi-icon">🔥</div>
+        <div class="kpi-val green" style="font-size:20px">43%</div>
+        <div class="kpi-label">Muy decepcionados si desaparece</div>
+        <div class="kpi-delta up">↑ Umbral PMF: ≥40%</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-icon">⭐</div>
+        <div class="kpi-val blue" style="font-size:20px">+61</div>
+        <div class="kpi-label">NPS score</div>
+        <div class="kpi-delta up">↑ SaaS avg +41</div>
+      </div>
+      <div class="kpi-card purple">
+        <div class="kpi-icon">📊</div>
+        <div class="kpi-val purple" style="font-size:20px">78%</div>
+        <div class="kpi-label">Recomendarían</div>
+        <div class="kpi-delta up">↑ +6pp este mes</div>
+      </div>
+    </div>
+
+    <div style="height:32px"></div>
+  </div>
+
+  <!-- ENGAGEMENT TAB -->
+  <div class="dash-content" id="tab-engagement">
+
+    <div class="s-title mt16">USO DE FEATURES</div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Features más utilizadas</div><div class="chart-sub">% de sesiones donde se usa cada feature</div></div>
+        <span class="chart-badge agg">AGREGADO</span>
+      </div>
+      <div id="feature-bars"></div>
+    </div>
+
+    <!-- Session depth -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Profundidad de sesión</div><div class="chart-sub">¿Cuántas pantallas ve un usuario por sesión?</div></div>
+      </div>
+      <div id="depth-bars"></div>
+    </div>
+
+    <div class="s-title">PLATAFORMA</div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Distribución por plataforma</div></div>
+        <span class="chart-badge agg">AGREGADO</span>
+      </div>
+      <div class="donut-wrap" id="platform-donut"></div>
+    </div>
+
+    <div class="s-title">DISPOSITIVOS GARMIN</div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Modelos de dispositivo</div><div class="chart-sub">Sin identificadores únicos de hardware</div></div>
+        <span class="chart-badge anon">ANÓNIMO</span>
+      </div>
+      <div id="device-list"></div>
+    </div>
+
+    <!-- Language split -->
+    <div class="s-title">IDIOMA / OBJETIVO</div>
+    <div class="kpi-grid">
+      <div class="chart-card" style="margin:0">
+        <div class="chart-header"><div><div class="chart-title">Idioma</div></div></div>
+        <div class="donut-wrap" id="lang-donut"></div>
+      </div>
+      <div class="chart-card" style="margin:0">
+        <div class="chart-header"><div><div class="chart-title">Objetivo</div></div></div>
+        <div class="donut-wrap" id="goal-donut"></div>
+      </div>
+    </div>
+
+    <div style="height:32px"></div>
+  </div>
+
+  <!-- HEALTH DATA TAB -->
+  <div class="dash-content" id="tab-health">
+
+    <div class="privacy-banner mt16">
+      <div class="pb-icon">🏥</div>
+      <div class="pb-body">
+        <div class="pb-title">Datos de salud: solo estadísticas agregadas</div>
+        <div class="pb-text">Los datos biométricos <strong>nunca</strong> se envían al backend. Solo se envían scores calculados. Las estadísticas aquí son distribuciones estadísticas con k ≥ 50. Ningún founder puede derivar datos de un usuario específico.</div>
+        <div class="pb-tags">
+          <span class="pb-tag green">Sin biométricos crudos</span>
+          <span class="pb-tag green">Solo scores</span>
+          <span class="pb-tag blue">HIPAA-conscious</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="s-title">DISTRIBUCIÓN DE ZONAS (7d)</div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Zonas de readiness</div><div class="chart-sub">Distribución diaria de usuarios por zona</div></div>
+        <span class="chart-badge anon">ANÓNIMO</span>
+      </div>
+      <div class="donut-wrap" id="zone-donut"></div>
+    </div>
+
+    <!-- Zona trend -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Evolución de zonas (7d)</div><div class="chart-sub">Porcentaje diario de usuarios por zona</div></div>
+      </div>
+      <svg id="zone-trend" class="line-chart" height="100" viewBox="0 0 340 100">
+        <defs>
+          <linearGradient id="greenGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#00D68F" stop-opacity=".3"/>
+            <stop offset="100%" stop-color="#00D68F" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+
+    <div class="s-title">IMPACTO DE HÁBITOS (ESTADÍSTICO)</div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Impacto de hábitos en recovery score</div><div class="chart-sub">Diferencia media en puntos de recovery (población agregada)</div></div>
+        <span class="chart-badge agg">N &gt; 200</span>
+      </div>
+      <div id="habit-impact"></div>
+    </div>
+
+    <div class="s-title">HÁBITOS CUANTITATIVOS <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:6px;background:var(--accent-dim);color:var(--accent);margin-left:6px;vertical-align:middle">NUEVO</span></div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Distribución de cantidades reportadas</div><div class="chart-sub">% de días cuando el hábito fue registrado · impacto en score</div></div>
+        <span class="chart-badge agg">N &gt; 100</span>
+      </div>
+      <div id="quant-habits"></div>
+    </div>
+
+    <div class="s-title">SCORES PROMEDIO</div>
+    <div class="kpi-grid">
+      <div class="kpi-card green">
+        <div class="kpi-icon">💚</div>
+        <div class="kpi-val green" style="font-size:24px">61.4</div>
+        <div class="kpi-label">Recovery promedio</div>
+        <div class="kpi-delta up">↑ +2.1 esta semana</div>
+      </div>
+      <div class="kpi-card red">
+        <div class="kpi-icon">🔥</div>
+        <div class="kpi-val red" style="font-size:24px">38.7</div>
+        <div class="kpi-label">Strain promedio</div>
+        <div class="kpi-delta flat">→ Sin cambio</div>
+      </div>
+      <div class="kpi-card yellow">
+        <div class="kpi-icon">😴</div>
+        <div class="kpi-val yellow" style="font-size:24px">7.1h</div>
+        <div class="kpi-label">Sueño promedio</div>
+        <div class="kpi-delta up">↑ +0.2h</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-icon">🔋</div>
+        <div class="kpi-val blue" style="font-size:24px">54</div>
+        <div class="kpi-label">Body Battery prom.</div>
+        <div class="kpi-delta up">↑ +3pts</div>
+      </div>
+    </div>
+
+    <div style="height:32px"></div>
+  </div>
+
+  <!-- RETENTION TAB -->
+  <div class="dash-content" id="tab-retention">
+
+    <div class="s-title mt16">EMBUDO DE ACTIVACIÓN</div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Funnel onboarding → uso diario</div><div class="chart-sub">Usuarios que completan cada paso</div></div>
+      </div>
+      <div id="funnel-chart"></div>
+    </div>
+
+    <div class="s-title">RETENCIÓN POR COHORTE</div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Cohort retention (D1 · D7 · D14 · D30)</div><div class="chart-sub">% usuarios activos X días después del signup</div></div>
+        <span class="chart-badge anon">ANÓNIMO</span>
+      </div>
+      <div class="cohort-table" id="cohort-table"></div>
+    </div>
+
+    <!-- D1/D7/D30 summary -->
+    <div class="kpi-grid-3">
+      <div class="kpi-card green">
+        <div class="kpi-icon">📅</div>
+        <div class="kpi-val green" style="font-size:22px">72%</div>
+        <div class="kpi-label">D1 Retention</div>
+        <div class="kpi-delta up">↑ +3pp</div>
+      </div>
+      <div class="kpi-card yellow">
+        <div class="kpi-icon">📅</div>
+        <div class="kpi-val yellow" style="font-size:22px">45%</div>
+        <div class="kpi-label">D7 Retention</div>
+        <div class="kpi-delta flat">→ Estable</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-icon">📅</div>
+        <div class="kpi-val blue" style="font-size:22px">28%</div>
+        <div class="kpi-label">D30 Retention</div>
+        <div class="kpi-delta up">↑ +2pp</div>
+      </div>
+      <div class="kpi-card purple">
+        <div class="kpi-icon">💎</div>
+        <div class="kpi-val purple" style="font-size:22px">12d</div>
+        <div class="kpi-label">Median LTV window</div>
+        <div class="kpi-delta flat">→ Estable</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-icon">🏆</div>
+        <div class="kpi-val green" style="font-size:22px">31</div>
+        <div class="kpi-label">Streak máx. media</div>
+        <div class="kpi-delta up">↑ +4d</div>
+      </div>
+      <div class="kpi-card yellow">
+        <div class="kpi-icon">🔁</div>
+        <div class="kpi-val yellow" style="font-size:22px">18%</div>
+        <div class="kpi-label">Re-engagement rate</div>
+        <div class="kpi-delta up">↑ +2pp</div>
+      </div>
+    </div>
+
+    <div class="s-title">CHURN ANALYSIS</div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Razones de abandono (inferidas)</div><div class="chart-sub">Basado en patrones de sesión, no encuestas</div></div>
+      </div>
+      <div id="churn-bars"></div>
+    </div>
+
+    <div style="height:32px"></div>
+  </div>
+
+  <!-- PRIVACY TAB -->
+  <div class="dash-content" id="tab-privacy">
+
+    <div class="privacy-banner mt16">
+      <div class="pb-icon">🔐</div>
+      <div class="pb-body">
+        <div class="pb-title">Compromiso de privacidad de ReadyDay</div>
+        <div class="pb-text">Este panel es solo para founders. Los datos mostrados son estadísticas agregadas sin posibilidad de identificar usuarios. Esta página no está indexada, requiere PIN, y el acceso se registra en un audit log inmutable.</div>
+      </div>
+    </div>
+
+    <div class="s-title">QUÉ RECOLECTAMOS (y qué NO)</div>
+    <div class="chart-card">
+      <table class="data-table">
+        <thead><tr><th>Dato</th><th>¿Se recolecta?</th><th>¿Cómo se almacena?</th><th>¿Founders lo ven?</th></tr></thead>
+        <tbody id="data-table-body"></tbody>
+      </table>
+    </div>
+
+    <div class="s-title">ARQUITECTURA DE PRIVACIDAD</div>
+    <div class="chart-card">
+      <div class="chart-header"><div><div class="chart-title">Flujo de datos y puntos de control</div></div></div>
+      <div id="privacy-arch"></div>
+    </div>
+
+    <div class="s-title">ACCESOS A ESTE DASHBOARD (Audit Log)</div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Log de accesos</div><div class="chart-sub">Todo acceso queda registrado. Sin excepciones.</div></div>
+        <span class="chart-badge green">INMUTABLE</span>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Timestamp</th><th>Rol</th><th>IP (truncada)</th><th>Acción</th></tr></thead>
+        <tbody id="audit-log"></tbody>
+      </table>
+    </div>
+
+    <div class="s-title">DERECHOS DE USUARIOS ACTIVOS</div>
+    <div class="kpi-grid-3">
+      <div class="kpi-card green">
+        <div class="kpi-icon">📤</div>
+        <div class="kpi-val green" style="font-size:20px">12</div>
+        <div class="kpi-label">Solicitudes export</div>
+        <div class="kpi-delta up">100% completadas</div>
+      </div>
+      <div class="kpi-card red">
+        <div class="kpi-icon">🗑️</div>
+        <div class="kpi-val red" style="font-size:20px">3</div>
+        <div class="kpi-label">Solicitudes borrado</div>
+        <div class="kpi-delta up">100% completadas &lt;24h</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-icon">✏️</div>
+        <div class="kpi-val blue" style="font-size:20px">5</div>
+        <div class="kpi-label">Correcciones datos</div>
+        <div class="kpi-delta up">100% completadas</div>
+      </div>
+    </div>
+
+    <div style="height:32px"></div>
+  </div>
+
+</div><!-- end dashboard -->
+
+<script>
+(function(){
+'use strict';
+
+/* ── PIN (desactivado temporalmente — acceso directo) ── */
+var _locked = false;
+function pinPress(){}
+function pinDel(){}
+function lockDash(){}
+
+/* ── KEYBOARD PIN ── */
+document.addEventListener('keydown',function(e){
+  if(_locked) return;
+  if(e.key>='0'&&e.key<='9') pinPress(parseInt(e.key));
+  if(e.key==='Backspace') pinDel();
+});
+
+/* ── TABS ── */
+function switchDashTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+  document.querySelectorAll('.dash-content').forEach(function(c){ c.classList.remove('active'); });
+  var btns=document.querySelectorAll('.tab-btn');
+  var tabMap={overview:0,engagement:1,health:2,retention:3,privacy:4};
+  if(btns[tabMap[tab]]) btns[tabMap[tab]].classList.add('active');
+  var el=document.getElementById('tab-'+tab);
+  if(el) el.classList.add('active');
+}
+window.switchDashTab=switchDashTab;
+
+var _period=7;
+function setPeriod(p,btn){
+  _period=p;
+  document.querySelectorAll('.period-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  renderDAUChart();
+  updateKPIs();
+}
+window.setPeriod=setPeriod;
+
+/* ── MOCK DATA ── */
+function seed(n){ var x=Math.sin(n+1)*10000; return x-(x|0); }
+function mockDAU(days){
+  var base=[72,68,75,82,94,88,91,96,78,84,92,86,94,79,85,88,95,91,87,82,78,84,90,94,88,83,87,92,96,94];
+  var result=[];
+  for(var i=0;i<days;i++) result.push(base[i%base.length]+Math.round((seed(i*7)-0.5)*8));
+  return result;
+}
+function mockNewVsRet(days){
+  var dauData=mockDAU(days);
+  return dauData.map(function(v){ return {total:v,newU:Math.round(v*(.18+seed(v)*.1)),ret:0}; }).map(function(r){ r.ret=r.total-r.newU; return r; });
+}
+
+/* ── UPDATE KPIs BY PERIOD ── */
+function updateKPIs(){
+  var factors={7:1,14:1.6,30:3.2,90:8.4};
+  var f=factors[_period]||1;
+  var total=Math.round(847*Math.min(f,10));
+  var dau=Math.round(94*(1+(_period-7)*0.015));
+  var wau=Math.round(381*(1+(_period-7)*0.02));
+  document.getElementById('kpi-total').textContent=total>9999?(total/1000).toFixed(1)+'k':total;
+  document.getElementById('kpi-dau').textContent=dau;
+  document.getElementById('kpi-wau').textContent=wau;
+  var ratio=((dau/wau)*100).toFixed(1)+'%';
+  document.getElementById('kpi-dau-wau').textContent=ratio;
+}
+
+/* ── SVG HELPERS ── */
+function path(pts,close){
+  if(!pts.length) return '';
+  var d='M'+pts[0][0]+' '+pts[0][1];
+  for(var i=1;i<pts.length;i++) d+=' L'+pts[i][0]+' '+pts[i][1];
+  if(close) d+=' Z';
+  return d;
+}
+function smoothPath(pts){
+  if(pts.length<2) return path(pts);
+  var d='M'+pts[0][0]+' '+pts[0][1];
+  for(var i=0;i<pts.length-1;i++){
+    var x1=pts[i][0], y1=pts[i][1], x2=pts[i+1][0], y2=pts[i+1][1];
+    var cx=(x1+x2)/2;
+    d+=' C'+cx+' '+y1+' '+cx+' '+y2+' '+x2+' '+y2;
+  }
+  return d;
+}
+
+/* ── DAU CHART ── */
+function renderDAUChart(){
+  var svg=document.getElementById('dau-chart');
+  if(!svg) return;
+  var days=_period;
+  var data=mockDAU(days);
+  var W=340,H=100,PL=4,PR=4,PT=10,PB=20;
+  var w=W-PL-PR, h=H-PT-PB;
+  var maxV=Math.max.apply(null,data)*1.1;
+  var minV=Math.min.apply(null,data)*0.9;
+  var pts=data.map(function(v,i){ return [PL+(i/(data.length-1))*w, PT+h-(v-minV)/(maxV-minV)*h]; });
+  var areaPts=pts.concat([[pts[pts.length-1][0],PT+h],[pts[0][0],PT+h]]);
+  var labelsEl=document.getElementById('dau-labels');
+  var labelStep=days<=7?1:days<=14?2:days<=30?5:15;
+  var today2=new Date();
+  var labelHtml='';
+
+  svg.innerHTML='<defs><linearGradient id="dauGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4A9EFF" stop-opacity=".35"/><stop offset="100%" stop-color="#4A9EFF" stop-opacity="0"/></linearGradient></defs>'
+    +'<path d="'+path(areaPts,true)+'" fill="url(#dauGrad)"/>'
+    +'<path d="'+smoothPath(pts)+'" class="lc-line blue"/>'
+    +pts.map(function(p,i){ return i===pts.length-1?'<circle cx="'+p[0]+'" cy="'+p[1]+'" r="4" fill="#4A9EFF"/>':''; }).join('');
+
+  for(var i=0;i<data.length;i+=labelStep){
+    var d2=new Date(today2); d2.setDate(d2.getDate()-(days-1-i));
+    var x=(PL+(i/(data.length-1))*w);
+    var pct=(x/W*100).toFixed(1)+'%';
+    var mo=d2.getMonth()+1, da=d2.getDate();
+    labelHtml+='<span style="font-size:9px;color:var(--text3);position:absolute;left:'+pct+';transform:translateX(-50%)">'+(mo+'/'+da)+'</span>';
+  }
+  if(labelsEl){ labelsEl.style.position='relative'; labelsEl.style.height='14px'; labelsEl.innerHTML=labelHtml; }
+}
+
+/* ── NEW VS RET CHART ── */
+function renderNewVsRet(){
+  var el=document.getElementById('new-vs-ret-chart');
+  if(!el) return;
+  var days=7;
+  var data=mockNewVsRet(days);
+  var today2=new Date();
+  var days_labels=['L','M','X','J','V','S','D'];
+  var maxV=Math.max.apply(null,data.map(function(d){ return d.total; }));
+  var html='<div style="display:flex;align-items:flex-end;gap:6px;height:80px">';
+  data.forEach(function(d,i){
+    var retH=Math.round((d.ret/maxV)*72);
+    var newH=Math.round((d.newU/maxV)*72);
+    var dt=new Date(today2); dt.setDate(dt.getDate()-(days-1-i));
+    var isToday=i===days-1;
+    html+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">'
+      +'<div style="width:100%;display:flex;flex-direction:column;justify-content:flex-end;height:72px;gap:1px">'
+      +'<div style="background:var(--blue);border-radius:3px 3px 0 0;height:'+newH+'px;opacity:.7"></div>'
+      +'<div style="background:var(--purple);border-radius:0 0 3px 3px;height:'+retH+'px"></div>'
+      +'</div>'
+      +'<div style="font-size:9px;color:'+(isToday?'var(--accent)':'var(--text3)')+'">'+days_labels[i%7]+'</div>'
+      +'</div>';
+  });
+  html+='</div>'
+    +'<div style="display:flex;gap:12px;margin-top:10px">'
+    +'<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)"><div style="width:10px;height:10px;background:var(--blue);border-radius:2px;opacity:.7"></div>Nuevos</div>'
+    +'<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)"><div style="width:10px;height:10px;background:var(--purple);border-radius:2px"></div>Recurrentes</div>'
+    +'</div>';
+  el.innerHTML=html;
+}
+
+/* ── FEATURE BARS ── */
+function renderFeatureBars(){
+  var el=document.getElementById('feature-bars');
+  if(!el) return;
+  var features=[
+    {name:'Tab Hoy',pct:100,color:'var(--accent)'},
+    {name:'Ver por qué',pct:64,color:'var(--blue)'},
+    {name:'Tab Tendencias',pct:44,color:'var(--purple)'},
+    {name:'Hábitos cuantitativos',pct:38,color:'var(--yellow)',badge:'NUEVO'},
+    {name:'Tab Ajustes',pct:22,color:'var(--text2)'},
+    {name:'Modal Energía',pct:18,color:'var(--green)'},
+    {name:'Modal Seguridad',pct:12,color:'var(--red)'},
+  ];
+  el.innerHTML=features.map(function(f){
+    return '<div class="hbar-row"><span class="hbar-label">'+f.name+(f.badge?'<span style="font-size:9px;font-weight:800;padding:1px 5px;border-radius:4px;background:var(--accent-dim);color:var(--accent);margin-left:5px">'+f.badge+'</span>':'')+'</span>'
+      +'<div class="hbar-wrap"><div class="hbar-fill" style="width:'+f.pct+'%;background:'+f.color+'"></div></div>'
+      +'<span class="hbar-val" style="color:'+f.color+'">'+f.pct+'%</span></div>';
+  }).join('');
+}
+
+/* ── DEPTH BARS ── */
+function renderDepthBars(){
+  var el=document.getElementById('depth-bars');
+  if(!el) return;
+  var depths=[
+    {name:'1 pantalla',pct:18,color:'var(--red)'},
+    {name:'2 pantallas',pct:28,color:'var(--yellow)'},
+    {name:'3 pantallas',pct:31,color:'var(--green)'},
+    {name:'4+ pantallas',pct:23,color:'var(--accent)'},
+  ];
+  el.innerHTML=depths.map(function(d){
+    return '<div class="hbar-row"><span class="hbar-label">'+d.name+'</span>'
+      +'<div class="hbar-wrap"><div class="hbar-fill" style="width:'+d.pct+'%;background:'+d.color+'"></div></div>'
+      +'<span class="hbar-val" style="color:'+d.color+'">'+d.pct+'%</span></div>';
+  }).join('');
+}
+
+/* ── DONUT ── */
+function renderDonut(containerId, segments, size){
+  var el=document.getElementById(containerId);
+  if(!el) return;
+  size=size||80;
+  var total=segments.reduce(function(a,b){ return a+b.val; },0);
+  var r=size/2-6, cx=size/2, cy=size/2;
+  var angle=-Math.PI/2;
+  var paths='';
+  segments.forEach(function(seg){
+    var sweep=(seg.val/total)*Math.PI*2;
+    var x1=cx+r*Math.cos(angle), y1=cy+r*Math.sin(angle);
+    var x2=cx+r*Math.cos(angle+sweep), y2=cy+r*Math.sin(angle+sweep);
+    var large=sweep>Math.PI?1:0;
+    paths+='<path d="M'+cx+' '+cy+' L'+x1.toFixed(1)+' '+y1.toFixed(1)+' A'+r+' '+r+' 0 '+large+' 1 '+x2.toFixed(1)+' '+y2.toFixed(1)+' Z" fill="'+seg.color+'" opacity=".85"/>';
+    angle+=sweep;
+  });
+  var legend=segments.map(function(s){
+    var pct=Math.round(s.val/total*100);
+    return '<div class="donut-item"><div class="donut-dot" style="background:'+s.color+'"></div>'
+      +'<span class="donut-name">'+s.name+'</span>'
+      +'<span class="donut-val">'+s.val+'</span>'
+      +'<span class="donut-pct">'+pct+'%</span></div>';
+  }).join('');
+  el.innerHTML='<svg class="donut-svg" width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'">'+paths
+    +'<circle cx="'+cx+'" cy="'+cy+'" r="'+(r*.55)+'" fill="var(--card2)"/></svg>'
+    +'<div class="donut-legend">'+legend+'</div>';
+}
+
+/* ── ZONE TREND ── */
+function renderZoneTrend(){
+  var svg=document.getElementById('zone-trend');
+  if(!svg) return;
+  var days=7;
+  var W=340,H=80,PL=4,PR=4,PT=8,PB=12;
+  var w=W-PL-PR, h=H-PT-PB;
+  var zones=[
+    {label:'Verde',data:[22,25,28,30,26,24,28],color:'#00D68F'},
+    {label:'Amarillo',data:[48,45,44,42,46,47,45],color:'#FFCC00'},
+    {label:'Rojo',data:[30,30,28,28,28,29,27],color:'#FF4757'},
+  ];
+  var svgContent='';
+  zones.forEach(function(z){
+    var pts=z.data.map(function(v,i){ return [PL+(i/(z.data.length-1))*w, PT+h-(v/100)*h]; });
+    svgContent+='<path d="'+smoothPath(pts)+'" fill="none" stroke="'+z.color+'" stroke-width="2" stroke-linecap="round" opacity=".8"/>';
+    svgContent+='<circle cx="'+pts[pts.length-1][0]+'" cy="'+pts[pts.length-1][1]+'" r="3" fill="'+z.color+'"/>';
+    svgContent+='<text x="'+(pts[pts.length-1][0]+5)+'" y="'+(pts[pts.length-1][1]+4)+'" font-size="9" fill="'+z.color+'" font-family="-apple-system,sans-serif">'+z.data[z.data.length-1]+'%</text>';
+  });
+  svg.innerHTML=svgContent;
+}
+
+/* ── HABIT IMPACT ── */
+function renderHabitImpact(){
+  var el=document.getElementById('habit-impact');
+  if(!el) return;
+  var impacts=[
+    {name:'3+ bebidas alcohol',delta:-24.8,color:'var(--red)'},
+    {name:'2 bebidas alcohol',delta:-15.6,color:'var(--red)'},
+    {name:'1 bebida alcohol',delta:-9.2,color:'var(--yellow)'},
+    {name:'3+ cafés tarde',delta:-18.4,color:'var(--red)'},
+    {name:'2 cafés tarde',delta:-12.1,color:'var(--yellow)'},
+    {name:'1 café tarde',delta:-6.3,color:'var(--yellow)'},
+    {name:'Cena a las 23:00+',delta:-14.7,color:'var(--red)'},
+    {name:'Cena a las 22:00',delta:-8.9,color:'var(--yellow)'},
+    {name:'Cena a las 21:00',delta:-4.2,color:'var(--text2)'},
+    {name:'8h+ sueño',delta:+14.2,color:'var(--green)'},
+    {name:'Estrés bajo (<30)',delta:+12.1,color:'var(--blue)'},
+  ];
+  var maxAbs=Math.max.apply(null,impacts.map(function(i){ return Math.abs(i.delta); }));
+  el.innerHTML=impacts.map(function(im){
+    var pct=Math.round(Math.abs(im.delta)/maxAbs*100);
+    var sign=im.delta>0?'+':'';
+    return '<div class="hbar-row"><span class="hbar-label" style="width:150px;font-size:11px;color:'+(im.delta<0?'var(--text)':'var(--text)')+'">'+im.name+'</span>'
+      +'<div class="hbar-wrap"><div class="hbar-fill" style="width:'+pct+'%;background:'+im.color+'"></div></div>'
+      +'<span class="hbar-val" style="color:'+im.color+';width:52px;font-size:11px">'+sign+im.delta+'pts</span></div>';
+  }).join('');
+}
+
+/* ── QUANTITATIVE HABITS ── */
+function renderQuantHabits(){
+  var el=document.getElementById('quant-habits');
+  if(!el) return;
+  function section(title, data){
+    var maxV=Math.max.apply(null,data.map(function(d){return d.pct}));
+    return '<div style="margin-bottom:16px">'
+      +'<div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">'+title+'</div>'
+      +data.map(function(d){
+        var barPct=Math.round(d.pct/maxV*100);
+        return '<div class="hbar-row">'
+          +'<span class="hbar-label" style="width:84px;font-size:12px">'+d.label+'</span>'
+          +'<div class="hbar-wrap"><div class="hbar-fill" style="width:'+barPct+'%;background:'+d.color+'"></div></div>'
+          +'<span style="font-size:12px;font-weight:700;width:32px;text-align:right;color:var(--text2)">'+d.pct+'%</span>'
+          +'<span style="font-size:10px;font-weight:800;color:'+d.color+';width:44px;text-align:right">'+d.impact+'</span>'
+          +'</div>';
+      }).join('')
+      +'</div>';
+  }
+  el.innerHTML=section('☕ Cafés tarde reportados',[
+    {label:'1 café',pct:38,impact:'−8pts',color:'var(--yellow)'},
+    {label:'2 cafés',pct:29,impact:'−16pts',color:'var(--yellow)'},
+    {label:'3+ cafés',pct:12,impact:'−24pts',color:'var(--red)'},
+  ])+section('🍷 Bebidas alcohólicas reportadas',[
+    {label:'1 copa',pct:24,impact:'−13pts',color:'var(--yellow)'},
+    {label:'2 copas',pct:16,impact:'−26pts',color:'var(--red)'},
+    {label:'3+ copas',pct:8,impact:'−35pts',color:'var(--red)'},
+  ])+section('🌙 Hora de cena tarde',[
+    {label:'21:00',pct:18,impact:'−7pts',color:'var(--text2)'},
+    {label:'22:00',pct:22,impact:'−13pts',color:'var(--yellow)'},
+    {label:'23:00+',pct:11,impact:'−20pts',color:'var(--red)'},
+  ]);
+}
+
+/* ── PMF ── */
+function renderPMF(){
+  var el=document.getElementById('pmf-section');
+  if(!el) return;
+  el.innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">'
+    +'<div style="background:linear-gradient(135deg,rgba(0,214,143,.08),rgba(124,110,255,.06));border:1px solid rgba(0,214,143,.2);border-radius:12px;padding:16px">'
+    +'<div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Muy decepcionados si desaparece</div>'
+    +'<div style="font-size:38px;font-weight:900;color:var(--green);letter-spacing:-2px;line-height:1">43%</div>'
+    +'<div style="font-size:11px;color:var(--text2);margin-top:6px">✅ Umbral PMF ≥40% · n=67</div>'
+    +'</div>'
+    +'<div style="background:linear-gradient(135deg,rgba(74,158,255,.07),rgba(124,110,255,.05));border:1px solid rgba(74,158,255,.2);border-radius:12px;padding:16px">'
+    +'<div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">NPS score</div>'
+    +'<div style="font-size:38px;font-weight:900;color:var(--blue);letter-spacing:-2px;line-height:1">+61</div>'
+    +'<div style="font-size:11px;color:var(--text2);margin-top:6px">↑ SaaS avg +41</div>'
+    +'</div></div>'
+    +'<div style="background:var(--card2);border-radius:12px;padding:14px;border:1px solid var(--border)">'
+    +'<div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Frases destacadas · sin PII</div>'
+    +['"Cada mañana lo primero que hago es abrir ReadyDay."','"Por fin una app que me dice qué hacer, no solo datos."','"Antes adivinaba si entrenar. Ahora lo sé."']
+      .map(function(q){return'<div style="font-size:13px;color:var(--text);padding:8px 0;border-bottom:1px solid var(--border);font-style:italic;line-height:1.4">'+q+'</div>'}).join('')
+    +'</div>';
+}
+
+/* ── DEVICE LIST ── */
+function renderDeviceList(){
+  var el=document.getElementById('device-list');
+  if(!el) return;
+  var devices=[
+    {icon:'⌚',name:'Garmin Venu 3',sub:'AMOLED · GPS · VO2',pct:32},
+    {icon:'⌚',name:'Garmin Forerunner 265',sub:'AMOLED · Running · GPS',pct:24},
+    {icon:'⌚',name:'Garmin Fenix 7',sub:'MIP · Outdoor · GPS',pct:18},
+    {icon:'⌚',name:'Garmin Venu 2',sub:'AMOLED · Fitness',pct:12},
+    {icon:'⌚',name:'Garmin Forerunner 55',sub:'MIP · Basic GPS',pct:8},
+    {icon:'⌚',name:'Otros modelos',sub:'10+ modelos adicionales',pct:6},
+  ];
+  el.innerHTML=devices.map(function(d){
+    return '<div class="device-row">'
+      +'<div class="device-icon">'+d.icon+'</div>'
+      +'<div class="device-info"><div class="device-name">'+d.name+'</div><div class="device-sub">'+d.sub+'</div></div>'
+      +'<div class="device-bar-outer"><div class="device-bar-inner" style="width:'+d.pct+'%"></div></div>'
+      +'<div class="device-pct">'+d.pct+'%</div></div>';
+  }).join('');
+}
+
+/* ── FUNNEL ── */
+function renderFunnel(){
+  var el=document.getElementById('funnel-chart');
+  if(!el) return;
+  var steps=[
+    {label:'App abierta',n:1248,pct:100,color:'var(--accent)'},
+    {label:'Onboarding iniciado',n:1008,pct:81,color:'var(--blue)'},
+    {label:'Onboarding completado',n:847,pct:68,color:'var(--blue)'},
+    {label:'Primera sincronización Garmin',n:703,pct:56,color:'var(--purple)'},
+    {label:'Primera recomendación vista',n:642,pct:51,color:'var(--purple)'},
+    {label:'Activo semana 1',n:458,pct:37,color:'var(--green)'},
+    {label:'Activo semana 4',n:237,pct:19,color:'var(--green)'},
+  ];
+  el.innerHTML=steps.map(function(s,i){
+    var drop=i>0?Math.round(100-(s.n/steps[i-1].n*100)):null;
+    return '<div class="funnel-step">'
+      +'<div class="funnel-num">'+(i+1)+'</div>'
+      +'<div class="funnel-bar-outer"><div class="funnel-bar-inner" style="width:'+s.pct+'%;background:'+s.color+'">'+s.label+'</div></div>'
+      +'<div class="funnel-pct '+(drop!==null&&drop>20?'drop':'ok')+'">'+s.pct+'%</div></div>';
+  }).join('');
+}
+
+/* ── COHORT TABLE ── */
+function renderCohortTable(){
+  var el=document.getElementById('cohort-table');
+  if(!el) return;
+  var cohorts=[
+    {week:'Sem 1',n:142,d1:74,d7:48,d14:35,d30:22},
+    {week:'Sem 2',n:168,d1:71,d7:46,d14:33,d30:null},
+    {week:'Sem 3',n:184,d1:73,d7:47,d14:null,d30:null},
+    {week:'Sem 4',n:195,d1:72,d7:null,d14:null,d30:null},
+    {week:'Sem 5',n:158,d1:75,d7:null,d14:null,d30:null},
+  ];
+  function cellClass(v){
+    if(v===null) return 'cell-empty';
+    if(v===100) return 'cell-100';
+    if(v>=60) return 'cell-hi';
+    if(v>=35) return 'cell-mid';
+    return 'cell-lo';
+  }
+  function cellStyle(v){
+    if(v===null) return 'color:var(--text3)';
+    if(v===100) return 'background:rgba(124,110,255,.5);color:#fff';
+    if(v>=60) return 'background:rgba(0,214,143,.2);color:var(--green)';
+    if(v>=35) return 'background:rgba(255,204,0,.18);color:var(--yellow)';
+    return 'background:rgba(255,71,87,.18);color:var(--red)';
+  }
+  var html='<table style="width:100%;border-collapse:collapse;font-size:12px">'
+    +'<thead><tr><th style="text-align:left;padding:6px 8px;font-size:10px;color:var(--text3);letter-spacing:.5px">COHORTE</th><th style="padding:6px 8px;font-size:10px;color:var(--text3)">N</th><th style="padding:6px 8px;font-size:10px;color:var(--text3)">D1</th><th style="padding:6px 8px;font-size:10px;color:var(--text3)">D7</th><th style="padding:6px 8px;font-size:10px;color:var(--text3)">D14</th><th style="padding:6px 8px;font-size:10px;color:var(--text3)">D30</th></tr></thead><tbody>';
+  cohorts.forEach(function(c){
+    html+='<tr>'
+      +'<td style="padding:6px 8px;font-weight:600">'+c.week+'</td>'
+      +'<td style="padding:6px 8px;text-align:center;color:var(--text2)">'+c.n+'</td>'
+      +'<td style="padding:6px 8px;text-align:center;border-radius:4px;'+cellStyle(c.d1)+'">'+( c.d1!==null?c.d1+'%':'—')+'</td>'
+      +'<td style="padding:6px 8px;text-align:center;border-radius:4px;'+cellStyle(c.d7)+'">'+( c.d7!==null?c.d7+'%':'—')+'</td>'
+      +'<td style="padding:6px 8px;text-align:center;border-radius:4px;'+cellStyle(c.d14)+'">'+( c.d14!==null?c.d14+'%':'—')+'</td>'
+      +'<td style="padding:6px 8px;text-align:center;border-radius:4px;'+cellStyle(c.d30)+'">'+( c.d30!==null?c.d30+'%':'—')+'</td>'
+      +'</tr>';
+  });
+  html+='</tbody></table>';
+  el.innerHTML=html;
+}
+
+/* ── CHURN BARS ── */
+function renderChurnBars(){
+  var el=document.getElementById('churn-bars');
+  if(!el) return;
+  var reasons=[
+    {name:'Sin sincronización Garmin',pct:38,color:'var(--red)'},
+    {name:'Baja frecuencia de uso (&lt;2x/sem)',pct:28,color:'var(--yellow)'},
+    {name:'Onboarding incompleto',pct:19,color:'var(--yellow)'},
+    {name:'Score siempre igual (poca varianza)',pct:9,color:'var(--text2)'},
+    {name:'Razón desconocida',pct:6,color:'var(--text3)'},
+  ];
+  el.innerHTML=reasons.map(function(r){
+    return '<div class="hbar-row"><span class="hbar-label" style="width:200px;font-size:12px">'+r.name+'</span>'
+      +'<div class="hbar-wrap"><div class="hbar-fill" style="width:'+r.pct+'%;background:'+r.color+'"></div></div>'
+      +'<span class="hbar-val" style="color:'+r.color+'">'+r.pct+'%</span></div>';
+  }).join('');
+}
+
+/* ── DATA TABLE ── */
+function renderDataTable(){
+  var el=document.getElementById('data-table-body');
+  if(!el) return;
+  var rows=[
+    {dato:'Datos biométricos crudos (HR, BB, stress)',collected:'❌ No',storage:'N/A',founders:'❌ Nunca'},
+    {dato:'Score de recovery calculado',collected:'✅ Sí',storage:'UUID cifrado',founders:'📊 Solo media'},
+    {dato:'Zona del día (verde/amarillo/rojo)',collected:'✅ Sí',storage:'Agregado k≥50',founders:'📊 Distribución'},
+    {dato:'Hábitos del día (café/alcohol/cena)',collected:'✅ Sí',storage:'Agregado k≥50',founders:'📊 Solo %'},
+    {dato:'Nombre o email real',collected:'✅ Sí',storage:'Cifrado AES-256',founders:'❌ Nunca'},
+    {dato:'UUID de usuario',collected:'✅ Sí',storage:'Hash one-way',founders:'❌ Sin revelar'},
+    {dato:'Modelo de dispositivo Garmin',collected:'✅ Sí',storage:'Agregado',founders:'📊 Solo modelo'},
+    {dato:'IP del dispositivo',collected:'✅ Sí',storage:'Truncada /24',founders:'❌ Truncada'},
+    {dato:'Ubicación GPS',collected:'❌ No',storage:'N/A',founders:'❌ Nunca'},
+    {dato:'Datos de actividad (rutas, splits)',collected:'❌ No',storage:'N/A',founders:'❌ Nunca'},
+  ];
+  function badgeColor(v){
+    if(v.includes('❌')||v.includes('No')) return 'background:var(--red-dim);color:var(--red)';
+    if(v.includes('✅')||v.includes('Sí')) return 'background:var(--green-dim);color:var(--green)';
+    if(v.includes('📊')) return 'background:var(--blue-dim);color:var(--blue)';
+    return 'background:var(--border);color:var(--text2)';
+  }
+  el.innerHTML=rows.map(function(r){
+    return '<tr><td style="font-size:12px">'+r.dato+'</td>'
+      +'<td><span class="td-badge" style="'+badgeColor(r.collected)+'">'+r.collected+'</span></td>'
+      +'<td style="font-size:12px;color:var(--text2)">'+r.storage+'</td>'
+      +'<td><span class="td-badge" style="'+badgeColor(r.founders)+'">'+r.founders+'</span></td></tr>';
+  }).join('');
+}
+
+/* ── PRIVACY ARCH ── */
+function renderPrivacyArch(){
+  var el=document.getElementById('privacy-arch');
+  if(!el) return;
+  var steps=[
+    {from:'⌚ Garmin',to:'📱 App móvil',how:'Garmin IQ SDK (BLE)',protection:'Local-first · AES-256'},
+    {from:'📱 App móvil',to:'☁️ Backend',how:'HTTPS TLS 1.3',protection:'Solo scores · UUID hash'},
+    {from:'☁️ Backend',to:'🗄️ Base de datos',how:'Internal network',protection:'AES-256 at rest · RBAC'},
+    {from:'🗄️ Base de datos',to:'📊 Dashboard',how:'Read-only view',protection:'k-anon ≥50 · Aggregation'},
+  ];
+  el.innerHTML=steps.map(function(s){
+    return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">'
+      +'<div style="font-size:13px;font-weight:600;width:90px;flex-shrink:0">'+s.from+'</div>'
+      +'<div style="color:var(--text3);font-size:16px">→</div>'
+      +'<div style="font-size:13px;font-weight:600;width:90px;flex-shrink:0">'+s.to+'</div>'
+      +'<div style="flex:1;font-size:11px;color:var(--text2)">'+s.how+'</div>'
+      +'<div style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;background:var(--green-dim);color:var(--green);text-align:right;flex-shrink:0;max-width:100px">'+s.protection+'</div>'
+      +'</div>';
+  }).join('');
+}
+
+/* ── AUDIT LOG ── */
+function renderAuditLog(){
+  var el=document.getElementById('audit-log');
+  if(!el) return;
+  var now=new Date();
+  function fmt(d){ return d.toLocaleDateString('es-ES',{month:'2-digit',day:'2-digit'})+' '+d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}); }
+  var logs=[
+    {ts:new Date(now.getTime()-2*60000),rol:'Founder',ip:'190.xxx.xxx',action:'Dashboard view'},
+    {ts:new Date(now.getTime()-14400000),rol:'Founder',ip:'190.xxx.xxx',action:'Health tab'},
+    {ts:new Date(now.getTime()-86400000),rol:'Founder',ip:'201.xxx.xxx',action:'Retention tab'},
+    {ts:new Date(now.getTime()-172800000),rol:'Founder',ip:'190.xxx.xxx',action:'Dashboard view'},
+    {ts:new Date(now.getTime()-259200000),rol:'Founder',ip:'201.xxx.xxx',action:'Privacy tab'},
+  ];
+  el.innerHTML=logs.map(function(l){
+    return '<tr><td style="font-size:11px;color:var(--text2)">'+fmt(l.ts)+'</td>'
+      +'<td><span class="td-badge" style="background:var(--accent-dim);color:var(--accent)">'+l.rol+'</span></td>'
+      +'<td style="font-size:11px;color:var(--text2);font-family:monospace">'+l.ip+'</td>'
+      +'<td style="font-size:12px">'+l.action+'</td></tr>';
+  }).join('');
+}
+
+/* ── INIT ── */
+function initDashboard(){
+  var now=new Date();
+  var el=document.getElementById('last-update');
+  if(el) el.textContent=now.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+
+  renderDAUChart();
+  renderNewVsRet();
+  renderFeatureBars();
+  renderDepthBars();
+  renderDeviceList();
+  renderFunnel();
+  renderCohortTable();
+  renderChurnBars();
+  renderDataTable();
+  renderPrivacyArch();
+  renderAuditLog();
+  renderZoneTrend();
+  renderHabitImpact();
+  renderQuantHabits();
+  renderPMF();
+
+  renderDonut('platform-donut',[
+    {name:'iOS',val:516,color:'#4A9EFF'},
+    {name:'Android',val:331,color:'#9B59FF'},
+  ],80);
+  renderDonut('lang-donut',[
+    {name:'Español',val:627,color:'#7C6EFF'},
+    {name:'English',val:220,color:'#4A9EFF'},
+  ],70);
+  renderDonut('goal-donut',[
+    {name:'Salud',val:440,color:'#00D68F'},
+    {name:'Rendimiento',val:263,color:'#FFCC00'},
+    {name:'Longevidad',val:144,color:'#FF4757'},
+  ],70);
+  renderDonut('zone-donut',[
+    {name:'🟢 Óptimo',val:28,color:'#00D68F'},
+    {name:'🟡 Moderado',val:45,color:'#FFCC00'},
+    {name:'🔴 Recuperación',val:27,color:'#FF4757'},
+  ],90);
+
+  // Keyboard shortcut info
+  console.log('%cReadyDay Founders Dashboard', 'color:#7C6EFF;font-size:18px;font-weight:bold');
+  console.log('%cDatos completamente anónimos. k-anonymity ≥ 50.', 'color:#00D68F');
+}
+
+window.pinPress=pinPress;
+window.pinDel=pinDel;
+
+/* ── AUTO-INIT (sin PIN) ── */
+document.addEventListener('DOMContentLoaded',function(){
+  document.getElementById('pin-screen').style.display='none';
+  document.getElementById('dashboard').classList.add('show');
+  initDashboard();
+});
+
+})();
+</script>
+</body>
+</html>

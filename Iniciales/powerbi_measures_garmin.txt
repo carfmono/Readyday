@@ -1,0 +1,110 @@
+-- Tabla esperada: Daily_Log
+-- Columnas esperadas:
+-- Date, HRV, BodyBatteryMorning, SleepScore, StressAvg, TrainingMin, Intensity, LateCoffee, LateDinner, IllnessFlag
+
+Avg_HRV_7d =
+AVERAGEX(
+    DATESINPERIOD('Daily_Log'[Date], MAX('Daily_Log'[Date]), -7, DAY),
+    CALCULATE(AVERAGE('Daily_Log'[HRV]))
+)
+
+HRV_Baseline_28d =
+AVERAGEX(
+    DATESINPERIOD('Daily_Log'[Date], MAX('Daily_Log'[Date]), -28, DAY),
+    CALCULATE(AVERAGE('Daily_Log'[HRV]))
+)
+
+HRV_Normalized =
+VAR baseline = [HRV_Baseline_28d]
+VAR currentHRV = AVERAGE('Daily_Log'[HRV])
+RETURN
+    IF(
+        ISBLANK(baseline) || baseline = 0,
+        BLANK(),
+        MAX(0, MIN(100, DIVIDE(currentHRV, baseline, 0) * 100))
+    )
+
+Sleep_Normalized =
+MAX(0, MIN(100, AVERAGE('Daily_Log'[SleepScore])))
+
+BodyBattery_Normalized =
+MAX(0, MIN(100, AVERAGE('Daily_Log'[BodyBatteryMorning])))
+
+Stress_Penalty =
+MAX(0, MIN(25, AVERAGE('Daily_Log'[StressAvg]) * 0.35))
+
+Habit_Penalty =
+(AVERAGE('Daily_Log'[LateCoffee]) * 6) +
+(AVERAGE('Daily_Log'[LateDinner]) * 6) +
+(AVERAGE('Daily_Log'[IllnessFlag]) * 15)
+
+Recovery_Score =
+VAR rawScore =
+    ([HRV_Normalized] * 0.40) +
+    ([Sleep_Normalized] * 0.30) +
+    ([BodyBattery_Normalized] * 0.30) -
+    [Stress_Penalty] -
+    [Habit_Penalty]
+RETURN ROUND(MAX(0, MIN(100, rawScore)), 0)
+
+Training_Load =
+SUMX(
+    'Daily_Log',
+    'Daily_Log'[TrainingMin] * 'Daily_Log'[Intensity]
+)
+
+Stress_Load =
+SUMX(
+    'Daily_Log',
+    'Daily_Log'[StressAvg] * 0.6
+)
+
+Strain_Score =
+VAR rawStrain =
+    [Training_Load] * 0.7 +
+    [Stress_Load] * 0.3
+RETURN ROUND(MAX(0, MIN(100, rawStrain)), 0)
+
+Balance_Score =
+ROUND([Recovery_Score] - DIVIDE([Strain_Score], 2, 0), 0)
+
+Readiness_Zone =
+SWITCH(
+    TRUE(),
+    [Recovery_Score] >= 75 && [Balance_Score] >= 20, "Verde",
+    [Recovery_Score] >= 50 && [Balance_Score] >= 0, "Amarillo",
+    "Rojo"
+)
+
+Recommendation_Text =
+SWITCH(
+    [Readiness_Zone],
+    "Verde", "Entrena fuerte / prioriza fuerza, intervalos o trabajo clave.",
+    "Amarillo", "Entrenamiento moderado / técnica, zona 2 o fuerza controlada.",
+    "Rojo", "Recuperación activa / caminar, movilidad, respiración y sueño."
+)
+
+Recovery_Trend_7d =
+AVERAGEX(
+    DATESINPERIOD('Daily_Log'[Date], MAX('Daily_Log'[Date]), -7, DAY),
+    CALCULATE([Recovery_Score])
+)
+
+Strain_Trend_7d =
+AVERAGEX(
+    DATESINPERIOD('Daily_Log'[Date], MAX('Daily_Log'[Date]), -7, DAY),
+    CALCULATE([Strain_Score])
+)
+
+Fatigue_Flag =
+VAR lowRecoveryDays =
+    COUNTROWS(
+        FILTER(
+            DATESINPERIOD('Daily_Log'[Date], MAX('Daily_Log'[Date]), -3, DAY),
+            CALCULATE([Recovery_Score]) < 50
+        )
+    )
+RETURN IF(lowRecoveryDays >= 3, 1, 0)
+
+Fatigue_Label =
+IF([Fatigue_Flag] = 1, "Fatiga acumulada", "Sin alerta")

@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "ReadyDay",
+    "slug": "readyday",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "readyday",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#07070F",
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.readyday.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#07070F"
+      },
+      "package": "com.readyday.app"
+    },
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

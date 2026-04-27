@@ -1,0 +1,152 @@
+[
+  {
+    "id": "yellow_typical",
+    "description": "Día típico amarillo — caso del mock por defecto. Balance positivo pero recovery no llega a 70.",
+    "snapshot": {
+      "capturedAt": "2026-04-22T07:00:00Z",
+      "bodyBattery": 67,
+      "stressAvg": 45,
+      "hrResting": 59,
+      "sleepScore": 74,
+      "sleepHours": 7.2,
+      "activityLoad": 40,
+      "recoveryTimeH": 28
+    },
+    "habits": {
+      "caffeineLate": { "cups": 0, "lastTime": null },
+      "alcohol": { "drinks": 0 },
+      "lateDinner": { "ate": false, "time": null }
+    },
+    "expected": {
+      "recoveryScore": 67,
+      "strainScore": 36,
+      "balanceScore": 49,
+      "zone": "yellow"
+    }
+  },
+  {
+    "id": "green_optimal",
+    "description": "Día óptimo — recovery >= 70 y balance >= 20.",
+    "snapshot": {
+      "capturedAt": "2026-04-22T07:00:00Z",
+      "bodyBattery": 85,
+      "stressAvg": 25,
+      "hrResting": 52,
+      "sleepScore": 88,
+      "sleepHours": 8.1,
+      "activityLoad": 20,
+      "recoveryTimeH": 5
+    },
+    "habits": {
+      "caffeineLate": { "cups": 0, "lastTime": null },
+      "alcohol": { "drinks": 0 },
+      "lateDinner": { "ate": false, "time": null }
+    },
+    "expected": {
+      "recoveryScore": 84,
+      "strainScore": 16,
+      "balanceScore": 76,
+      "zone": "green"
+    }
+  },
+  {
+    "id": "red_exhausted",
+    "description": "Día rojo — carga alta, batería baja, sueño pobre. Recovery muy por debajo de 45.",
+    "snapshot": {
+      "capturedAt": "2026-04-22T07:00:00Z",
+      "bodyBattery": 18,
+      "stressAvg": 78,
+      "hrResting": 72,
+      "sleepScore": 35,
+      "sleepHours": 5.0,
+      "activityLoad": 85,
+      "recoveryTimeH": 52
+    },
+    "habits": {
+      "caffeineLate": { "cups": 0, "lastTime": null },
+      "alcohol": { "drinks": 0 },
+      "lateDinner": { "ate": false, "time": null }
+    },
+    "expected": {
+      "recoveryScore": 23,
+      "strainScore": 71,
+      "balanceScore": -13,
+      "zone": "red"
+    }
+  },
+  {
+    "id": "yellow_bad_habits",
+    "description": "Zona amarilla causada por hábitos — 3 cafés tardíos, 2 bebidas alcohólicas, cena muy tarde.",
+    "snapshot": {
+      "capturedAt": "2026-04-22T07:00:00Z",
+      "bodyBattery": 55,
+      "stressAvg": 50,
+      "hrResting": 63,
+      "sleepScore": 58,
+      "sleepHours": 6.1,
+      "activityLoad": 30,
+      "recoveryTimeH": 14
+    },
+    "habits": {
+      "caffeineLate": { "cups": 3, "lastTime": "22:00" },
+      "alcohol": { "drinks": 2 },
+      "lateDinner": { "ate": true, "time": "23:00+" }
+    },
+    "expected": {
+      "recoveryScore": 54,
+      "strainScore": 39,
+      "balanceScore": 34,
+      "zone": "yellow"
+    }
+  },
+  {
+    "id": "red_borderline",
+    "description": "Zona roja por poco — recovery 34 < 45. Carga moderada + alcohol + alto tiempo de recuperación.",
+    "snapshot": {
+      "capturedAt": "2026-04-22T07:00:00Z",
+      "bodyBattery": 30,
+      "stressAvg": 65,
+      "hrResting": 68,
+      "sleepScore": 40,
+      "sleepHours": 5.5,
+      "activityLoad": 50,
+      "recoveryTimeH": 36
+    },
+    "habits": {
+      "caffeineLate": { "cups": 0, "lastTime": null },
+      "alcohol": { "drinks": 1 },
+      "lateDinner": { "ate": false, "time": null }
+    },
+    "expected": {
+      "recoveryScore": 34,
+      "strainScore": 51,
+      "balanceScore": 8,
+      "zone": "red"
+    }
+  },
+  {
+    "id": "green_high_activity",
+    "description": "Verde con actividad alta — recovery ≥ 70 pero strain elevado. Verificar que getZone() no se deja engañar por el strain.",
+    "snapshot": {
+      "capturedAt": "2026-04-22T07:00:00Z",
+      "bodyBattery": 75,
+      "stressAvg": 38,
+      "hrResting": 55,
+      "sleepScore": 78,
+      "sleepHours": 7.5,
+      "activityLoad": 65,
+      "recoveryTimeH": 30
+    },
+    "habits": {
+      "caffeineLate": { "cups": 0, "lastTime": null },
+      "alcohol": { "drinks": 0 },
+      "lateDinner": { "ate": false, "time": null }
+    },
+    "expected": {
+      "recoveryScore": 75,
+      "strainScore": 45,
+      "balanceScore": 53,
+      "zone": "green"
+    }
+  }
+]
