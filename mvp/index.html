@@ -267,6 +267,26 @@ window.onerror=function(msg,src,line,col,err){
 };
 </script>
 <script>
+/* ── API PREFETCH ──────────────────────────────────────────────────
+   Intenta obtener el score real desde /scores/today (mismo origen).
+   Si corre en Railway o local con backend: datos reales.
+   Si se abre como archivo local sin backend: cae silenciosamente.
+   ──────────────────────────────────────────────────────────────── */
+window.rdApiData = null;
+window.rdApiReady = false;
+(function(){
+  // Solo intenta si hay un origin real (no file://)
+  if(window.location.protocol === 'file:') { window.rdApiReady=true; return; }
+  fetch('/scores/today?lang=es')
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(j){
+      if(j && j.data) window.rdApiData = j.data;
+    })
+    .catch(function(){})
+    .finally(function(){ window.rdApiReady=true; });
+})();
+</script>
+<script>
 (function(){
 'use strict';
 
@@ -311,6 +331,30 @@ var H=[
   {date:dAgo(1),bodyBattery:43,stressAvg:62,hrResting:63,sleepScore:55,sleepHours:6.4,activityLoad:68,recoveryTimeH:48,habits:{caffeineLate:{cups:3,lastTime:'18:00'},alcohol:{drinks:0},lateDinner:{ate:false,time:null}}},
   {date:today,bodyBattery:67,stressAvg:45,hrResting:59,sleepScore:74,sleepHours:7.2,activityLoad:40,recoveryTimeH:28,habits:{caffeineLate:{cups:0,lastTime:null},alcohol:{drinks:0},lateDinner:{ate:false,time:null}}}
 ];
+
+/* ── API PATCH ─────────────────────────────────────────────────────
+   Si el backend devolvió datos reales, reemplaza el snapshot de hoy.
+   Los hábitos del usuario (state.defaults + todayOv) se aplican igual.
+   ──────────────────────────────────────────────────────────────── */
+function applyApiPatch(){
+  var api=window.rdApiData;
+  if(!api) return;
+  var t=H[H.length-1];
+  if(api.bodyBattery   != null) t.bodyBattery   = api.bodyBattery;
+  if(api.stressAvg     != null) t.stressAvg     = api.stressAvg;
+  if(api.hrResting     != null) t.hrResting     = api.hrResting;
+  if(api.sleepScore    != null) t.sleepScore    = api.sleepScore;
+  if(api.sleepHours    != null) t.sleepHours    = api.sleepHours;
+  if(api.activityLoad  != null) t.activityLoad  = api.activityLoad;
+  if(api.recoveryTimeH != null) t.recoveryTimeH = api.recoveryTimeH;
+  // Hábitos por defecto del API si el usuario no tiene overrides
+  if(api.defaultsUsed && !state.onboardingDone){
+    var du=api.defaultsUsed;
+    if(du.caffeineLate) state.defaults.caffeineLate=du.caffeineLate;
+    if(du.alcohol)      state.defaults.alcohol=du.alcohol;
+    if(du.lateDinner)   state.defaults.lateDinner=du.lateDinner;
+  }
+}
 
 /* ── ALGORITHM ── */
 function clamp(v,a,b){return Math.min(b,Math.max(a,v));}
@@ -963,25 +1007,36 @@ function startApp(){
 }
 
 /* ── BOOT — no tap needed, auto-advance ── */
+function doLaunch(){
+  try{
+    applyApiPatch();  // enriquece H[today] con datos reales si los hay
+    if(!state.onboardingDone){
+      state.obStep=state.obStep||1;
+      renderOnboarding();
+    } else {
+      startApp();
+    }
+  }catch(err2){
+    document.body.innerHTML='<div style="padding:24px;color:#FF4757;font-size:13px;background:#07070F;min-height:100vh;font-family:monospace"><b>Render Error</b><br><br>'+err2.message+'</div>';
+  }
+}
 function advanceSplash(){
   try{
     document.getElementById('splash').style.opacity='0';
     document.getElementById('splash').style.transform='scale(.97)';
     setTimeout(function(){
       document.getElementById('splash').style.display='none';
-      try{
-        if(!state.onboardingDone){
-          state.obStep=state.obStep||1;
-          renderOnboarding();
-        } else {
-          startApp();
-        }
-      }catch(err2){
-        document.body.innerHTML='<div style="padding:24px;color:#FF4757;font-size:13px;background:#07070F;min-height:100vh;font-family:monospace"><b>Render Error</b><br><br>'+err2.message+'</div>';
-      }
+      // Espera máximo 800ms al fetch del API; si no está listo, arranca igual
+      if(window.rdApiReady){ doLaunch(); return; }
+      var t=0,MAX=800,STEP=50;
+      var iv=setInterval(function(){
+        t+=STEP;
+        if(window.rdApiReady||t>=MAX){ clearInterval(iv); doLaunch(); }
+      },STEP);
     },350);
   }catch(err){
     document.getElementById('splash').style.display='none';
+    doLaunch();
   }
 }
 loadS();

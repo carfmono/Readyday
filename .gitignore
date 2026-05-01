@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Entornos
+.env
+.env.local
+.venv
+venv/
+env/
+
+# Base de datos local
+backend/readyday_dev.db
+backend/*.db
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node / Expo
+mobile/node_modules/
+mobile/.expo/
+mobile/dist/
+mobile/web-build/
+mobile/.DS_Store
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Railway / build
+.nixpacks/
+
+# Claude local config (no subir al repo)
+.claude/settings.local.json

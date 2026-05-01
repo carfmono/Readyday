@@ -4,8 +4,13 @@ Dev:  uvicorn main:app --reload
 Prod: Railway / Render (Dockerfile o Procfile)
 """
 
+import os
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -26,7 +31,6 @@ app = FastAPI(
 )
 
 # ── CORS ──────────────────────────────────────
-# En prod, restringir a los dominios reales.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -47,10 +51,24 @@ def health():
     return {"status": "ok", "service": "readyday-api"}
 
 
-@app.get("/", tags=["meta"])
-def root():
-    return {
-        "service": "ReadyDay API",
-        "version": "0.1.0",
-        "docs": "/docs",
-    }
+# ── Web app (HTML MVP) ────────────────────────
+# Sirve mvp/ como static files. En producción (Railway),
+# el MVP queda accesible en / para el socio.
+_MVP_DIR = Path(__file__).parent.parent / "mvp"
+
+if _MVP_DIR.exists():
+    # /founders.html y otros assets del mvp/
+    app.mount("/app", StaticFiles(directory=str(_MVP_DIR), html=True), name="mvp")
+
+    @app.get("/", tags=["web"], include_in_schema=False)
+    def serve_index():
+        """Sirve el HTML MVP en la raíz — acceso directo para socios."""
+        return FileResponse(str(_MVP_DIR / "index.html"))
+else:
+    @app.get("/", tags=["meta"])
+    def root():
+        return {
+            "service": "ReadyDay API",
+            "version": "0.1.0",
+            "docs": "/docs",
+        }
