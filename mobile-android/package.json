@@ -1,0 +1,22 @@
+{
+  "name": "readyday-android",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "echo 'Web served from server — no build needed'",
+    "cap:sync": "npx cap sync android",
+    "cap:open": "npx cap open android",
+    "cap:run": "npx cap run android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/push-notifications": "^7.0.0",
+    "@capacitor/local-notifications": "^7.0.0",
+    "@capacitor/app": "^7.0.0",
+    "@capacitor/splash-screen": "^7.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.0.0"
+  }
+}

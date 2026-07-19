@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<urn:manifest xmlns:urn="http://www.garmin.com/xml/connectiq"
+              version="3">
+  <urn:application id="f81e9f14-9a2c-4e5b-8c1a-readyday0001"
+                   launcherIcon="@Drawables.LauncherIcon"
+                   minApiLevel="3.2.0"
+                   name="@Strings.AppName"
+                   type="widget"
+                   version="1.0.0">
+
+    <!-- Permisos requeridos -->
+    <urn:permissions>
+      <urn:uses-permission id="SensorHistoryAccess"/>
+      <urn:uses-permission id="UserProfileAccess"/>
+      <urn:uses-permission id="Communications"/>
+      <urn:uses-permission id="InternetAccess"/>
+      <urn:uses-permission id="PersistStorage"/>
+    </urn:permissions>
+
+    <!-- Dispositivos compatibles — los más comunes con CIQ 3.2+ -->
+    <!-- Garmin Venu series -->
+    <urn:products><urn:product id="venu"/></urn:products>
+    <urn:products><urn:product id="venu2"/></urn:products>
+    <urn:products><urn:product id="venu2plus"/></urn:products>
+    <urn:products><urn:product id="venu2s"/></urn:products>
+    <urn:products><urn:product id="venusq"/></urn:products>
+    <urn:products><urn:product id="venusq2"/></urn:products>
+    <urn:products><urn:product id="venu3"/></urn:products>
+    <urn:products><urn:product id="venu3s"/></urn:products>
+    <!-- Garmin Forerunner series -->
+    <urn:products><urn:product id="fr245"/></urn:products>
+    <urn:products><urn:product id="fr245m"/></urn:products>
+    <urn:products><urn:product id="fr255"/></urn:products>
+    <urn:products><urn:product id="fr255m"/></urn:products>
+    <urn:products><urn:product id="fr255s"/></urn:products>
+    <urn:products><urn:product id="fr265"/></urn:products>
+    <urn:products><urn:product id="fr265s"/></urn:products>
+    <urn:products><urn:product id="fr955"/></urn:products>
+    <urn:products><urn:product id="fr965"/></urn:products>
+    <!-- Garmin Fenix series -->
+    <urn:products><urn:product id="fenix7"/></urn:products>
+    <urn:products><urn:product id="fenix7s"/></urn:products>
+    <urn:products><urn:product id="fenix7x"/></urn:products>
+    <urn:products><urn:product id="fenix7pro"/></urn:products>
+    <urn:products><urn:product id="fenix8"/></urn:products>
+    <!-- Garmin Vivoactive / Instinct -->
+    <urn:products><urn:product id="vivoactive4"/></urn:products>
+    <urn:products><urn:product id="vivoactive4s"/></urn:products>
+    <urn:products><urn:product id="vivoactive5"/></urn:products>
+    <urn:products><urn:product id="instinct2"/></urn:products>
+    <urn:products><urn:product id="instinct2s"/></urn:products>
+    <urn:products><urn:product id="instinct2x"/></urn:products>
+    <urn:products><urn:product id="instinct3"/></urn:products>
+
+  </urn:application>
+</urn:manifest>

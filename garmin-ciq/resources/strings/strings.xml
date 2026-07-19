@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<strings>
+  <string id="AppName">ReadyDay</string>
+  <string id="ZoneGreen">VERDE</string>
+  <string id="ZoneYellow">AMARILLO</string>
+  <string id="ZoneRed">ROJO</string>
+  <string id="Recovery">Recovery</string>
+  <string id="Syncing">Cargando...</string>
+  <string id="Settings">Ajustes</string>
+  <string id="TokenOk">Token: OK ✓</string>
+  <string id="TokenMissing">Token: falta</string>
+</strings>

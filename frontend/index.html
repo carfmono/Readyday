@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ReadyDay</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #07070F; --surface: #111120; --border: #1E1E35;
+    --green: #00D4AA; --yellow: #F5C842; --red: #FF4D6D;
+    --text: #E8E8F0; --muted: #6B6B8A; --accent: #7B5EA7;
+    --radius: 16px; --font: 'Inter', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; }
+
+  /* ── Auth ───────────────────────────────────────────── */
+  #auth-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+  .auth-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 40px; width: 100%; max-width: 400px; }
+  .auth-card h1 { font-size: 28px; font-weight: 800; letter-spacing: -1px; margin-bottom: 8px; }
+  .auth-card p { color: var(--muted); margin-bottom: 28px; font-size: 14px; }
+  .tab-row { display: flex; gap: 4px; margin-bottom: 24px; background: var(--bg);
+    border-radius: 10px; padding: 4px; }
+  .tab-btn { flex: 1; padding: 8px; border: none; background: none; color: var(--muted);
+    border-radius: 8px; cursor: pointer; font-size: 14px; transition: all .2s; }
+  .tab-btn.active { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; letter-spacing: .5px; text-transform: uppercase; }
+  .field input { width: 100%; padding: 12px 14px; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text); font-size: 15px; outline: none; transition: border .2s; }
+  .field input:focus { border-color: var(--accent); }
+  .btn-primary { width: 100%; padding: 14px; background: var(--accent); border: none; border-radius: 10px;
+    color: #fff; font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity .2s; }
+  .btn-primary:hover { opacity: .85; }
+  .error-msg { color: var(--red); font-size: 13px; margin-top: 10px; text-align: center; }
+
+  /* ── App ────────────────────────────────────────────── */
+  #app-screen { display: none; max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; }
+  .logo { font-size: 20px; font-weight: 800; letter-spacing: -1px; }
+  .logo span { color: var(--accent); }
+  .user-badge { display: flex; align-items: center; gap: 10px; }
+  .user-badge span { font-size: 13px; color: var(--muted); }
+  .btn-ghost { background: none; border: 1px solid var(--border); border-radius: 8px;
+    color: var(--muted); padding: 6px 12px; font-size: 13px; cursor: pointer; }
+  .btn-ghost:hover { color: var(--text); border-color: var(--accent); }
+
+  /* ── Score card ─────────────────────────────────────── */
+  .score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  @media (max-width: 600px) { .score-grid { grid-template-columns: 1fr; } }
+
+  .score-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; }
+  .score-card.main { grid-column: span 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .zone-ring { width: 140px; height: 140px; border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; flex-direction: column; border: 6px solid; margin-bottom: 16px; }
+  .zone-ring.green { border-color: var(--green); box-shadow: 0 0 30px rgba(0,212,170,.2); }
+  .zone-ring.yellow { border-color: var(--yellow); box-shadow: 0 0 30px rgba(245,200,66,.2); }
+  .zone-ring.red { border-color: var(--red); box-shadow: 0 0 30px rgba(255,77,109,.2); }
+  .zone-ring .score-num { font-size: 48px; font-weight: 900; line-height: 1; }
+  .zone-ring .score-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .zone-tag { display: inline-block; padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 1px; }
+  .zone-tag.green { background: rgba(0,212,170,.15); color: var(--green); }
+  .zone-tag.yellow { background: rgba(245,200,66,.15); color: var(--yellow); }
+  .zone-tag.red { background: rgba(255,77,109,.15); color: var(--red); }
+
+  .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+  .metric-item { display: flex; align-items: center; gap: 10px; }
+  .metric-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .metric-info { flex: 1; }
+  .metric-info .m-label { font-size: 11px; color: var(--muted); }
+  .metric-info .m-val { font-size: 16px; font-weight: 700; }
+
+  .rec-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 24px; }
+  .rec-card h3 { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .rec-card p { font-size: 16px; line-height: 1.6; }
+  .insight-tag { margin-top: 10px; padding: 10px 14px; background: rgba(123,94,167,.1); border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0; font-size: 14px; color: var(--muted); }
+
+  /* ── History chart ──────────────────────────────────── */
+  .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 24px; }
+  .chart-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 20px; }
+  .chart-wrap { height: 180px; }
+
+  /* ── Manual entry ───────────────────────────────────── */
+  .entry-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
+  .entry-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 20px; }
+  .entry-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 500px) { .entry-grid { grid-template-columns: 1fr; } }
+  .entry-field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  .entry-field input[type=range] { width: 100%; accent-color: var(--accent); }
+  .slider-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
+  .slider-val { font-size: 18px; font-weight: 700; color: var(--text); }
+
+  .habits-row { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+  .habit-chip { display: flex; align-items: center; gap: 8px; padding: 8px 14px;
+    background: var(--bg); border: 1px solid var(--border); border-radius: 20px; cursor: pointer;
+    user-select: none; font-size: 13px; transition: all .2s; }
+  .habit-chip.on { border-color: var(--accent); background: rgba(123,94,167,.15); color: var(--text); }
+  .submit-row { display: flex; gap: 12px; margin-top: 20px; }
+  .btn-submit { flex: 1; padding: 13px; background: var(--accent); border: none; border-radius: 10px;
+    color: #fff; font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity .2s; }
+  .btn-submit:hover { opacity: .85; }
+  .btn-submit:disabled { opacity: .5; cursor: default; }
+
+  /* ── No score state ─────────────────────────────────── */
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); }
+  .empty-state .big-emoji { font-size: 48px; margin-bottom: 12px; }
+  .empty-state p { font-size: 15px; }
+
+  /* ── Toast ──────────────────────────────────────────── */
+  #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px 20px; font-size: 14px; opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 99; }
+  #toast.show { opacity: 1; }
+
+  .section-title { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; margin-top: 28px; }
+
+  .no-data { color: var(--muted); font-size: 14px; }
+
+  .strain-bar { height: 6px; background: var(--border); border-radius: 3px; margin-top: 4px; }
+  .strain-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--green), var(--yellow), var(--red)); }
+</style>
+</head>
+<body>
+
+<!-- ── Auth Screen ─────────────────────────────────────────────────────────── -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <h1>Ready<span style="color:var(--accent)">Day</span></h1>
+    <p>Conoce tu cuerpo. Decide tu día.</p>
+    <div class="tab-row">
+      <button class="tab-btn active" onclick="showTab('login')">Entrar</button>
+      <button class="tab-btn" onclick="showTab('register')">Crear cuenta</button>
+    </div>
+
+    <div id="login-form">
+      <div class="field"><label>Email</label><input id="login-email" type="email" placeholder="tu@email.com"/></div>
+      <div class="field"><label>Contraseña</label><input id="login-pass" type="password" placeholder="••••••••"/></div>
+      <button class="btn-primary" onclick="doLogin()">Entrar</button>
+    </div>
+
+    <div id="register-form" style="display:none">
+      <div class="field"><label>Nombre</label><input id="reg-name" type="text" placeholder="Tu nombre"/></div>
+      <div class="field"><label>Email</label><input id="reg-email" type="email" placeholder="tu@email.com"/></div>
+      <div class="field"><label>Contraseña</label><input id="reg-pass" type="password" placeholder="8+ caracteres"/></div>
+      <button class="btn-primary" onclick="doRegister()">Crear cuenta</button>
+    </div>
+
+    <p id="auth-error" class="error-msg"></p>
+  </div>
+</div>
+
+<!-- ── App Screen ──────────────────────────────────────────────────────────── -->
+<div id="app-screen">
+  <header>
+    <div class="logo">Ready<span>Day</span></div>
+    <div class="user-badge">
+      <span id="user-name-badge"></span>
+      <button class="btn-ghost" onclick="doLogout()">Salir</button>
+    </div>
+  </header>
+
+  <!-- Score actual -->
+  <div id="today-section">
+    <p class="section-title">HOY — <span id="today-date"></span></p>
+    <div id="score-display" class="empty-state" style="display:none">
+      <div class="score-grid">
+        <div class="score-card main" id="main-score-card">
+          <div class="zone-ring" id="zone-ring">
+            <span class="score-num" id="score-num">--</span>
+            <span class="score-label">Recovery</span>
+          </div>
+          <div id="zone-badge" class="zone-tag">--</div>
+        </div>
+
+        <div class="score-card">
+          <div style="margin-bottom:16px">
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Strain</div>
+            <div style="font-size:32px;font-weight:800" id="strain-num">--</div>
+            <div class="strain-bar"><div class="strain-fill" id="strain-fill" style="width:0%"></div></div>
+          </div>
+          <div class="metrics-grid" id="metrics-grid"></div>
+        </div>
+      </div>
+
+      <div class="rec-card">
+        <h3>Recomendación</h3>
+        <p id="rec-text">—</p>
+        <div class="insight-tag" id="insight-text">—</div>
+      </div>
+    </div>
+
+    <div id="no-score" class="empty-state">
+      <div class="big-emoji">⏳</div>
+      <p>Aún no hay score para hoy. Envía tu snapshot debajo.</p>
+    </div>
+
+  <!-- Token para reloj Garmin -->
+  <p class="section-title">RELOJ GARMIN — TOKEN DE CONEXIÓN</p>
+  <div class="entry-card" style="margin-bottom:24px">
+    <h3 style="margin-bottom:8px">Token para el widget del reloj</h3>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Copia este token y pégalo en los ajustes del widget ReadyDay en tu reloj Garmin. Válido por 1 año.</p>
+    <div style="display:flex;gap:10px;align-items:center">
+      <div id="device-token-box" style="flex:1;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:10px;font-size:12px;color:var(--muted);word-break:break-all;font-family:monospace">
+        Haz clic en "Obtener token" →
+      </div>
+      <button class="btn-submit" style="flex:0;white-space:nowrap;padding:10px 16px" onclick="getDeviceToken()">Obtener token</button>
+    </div>
+    <p id="token-copied" style="font-size:12px;color:var(--green);margin-top:8px;display:none">✓ Copiado al portapapeles</p>
+  </div>
+  </div>
+
+  <!-- Historial -->
+  <div id="history-section" style="display:none">
+    <p class="section-title">ÚLTIMOS 7 DÍAS</p>
+    <div class="chart-card">
+      <h3>Recovery Score</h3>
+      <div class="chart-wrap"><canvas id="history-chart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Entrada manual -->
+  <p class="section-title">ENVIAR DATOS MANUALMENTE</p>
+  <div class="entry-card">
+    <h3>Snapshot hoy</h3>
+    <div class="entry-grid">
+      <div class="entry-field">
+        <label>Batería corporal <span class="slider-val" id="bb-val">60</span></label>
+        <input type="range" id="bb" min="0" max="100" value="60" oninput="document.getElementById('bb-val').textContent=this.value">
+        <div class="slider-row"><span>0</span><span>100</span></div>
+      </div>
+      <div class="entry-field">
+        <label>Score de sueño <span class="slider-val" id="sleep-val">70</span></label>
+        <input type="range" id="sleep" min="0" max="100" value="70" oninput="document.getElementById('sleep-val').textContent=this.value">
+        <div class="slider-row"><span>0</span><span>100</span></div>
+      </div>
+      <div class="entry-field">
+        <label>FC en reposo <span class="slider-val" id="hr-val">62</span> bpm</label>
+        <input type="range" id="hr" min="40" max="100" value="62" oninput="document.getElementById('hr-val').textContent=this.value">
+        <div class="slider-row"><span>40</span><span>100</span></div>
+      </div>
+      <div class="entry-field">
+        <label>Estrés promedio <span class="slider-val" id="stress-val">30</span></label>
+        <input type="range" id="stress" min="0" max="100" value="30" oninput="document.getElementById('stress-val').textContent=this.value">
+        <div class="slider-row"><span>0</span><span>100</span></div>
+      </div>
+      <div class="entry-field">
+        <label>Carga actividad <span class="slider-val" id="act-val">0</span></label>
+        <input type="range" id="act" min="0" max="100" value="0" oninput="document.getElementById('act-val').textContent=this.value">
+        <div class="slider-row"><span>0</span><span>100</span></div>
+      </div>
+      <div class="entry-field">
+        <label>Horas de sueño <span class="slider-val" id="sh-val">7.5</span>h</label>
+        <input type="range" id="sh" min="0" max="12" step="0.5" value="7.5" oninput="document.getElementById('sh-val').textContent=this.value">
+        <div class="slider-row"><span>0</span><span>12</span></div>
+      </div>
+    </div>
+
+    <div style="margin-top:16px">
+      <label style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Hábitos de hoy</label>
+      <div class="habits-row">
+        <div class="habit-chip" id="chip-caffeine" onclick="toggleChip('caffeine')">☕ Cafeína tardía</div>
+        <div class="habit-chip" id="chip-alcohol" onclick="toggleChip('alcohol')">🍷 Alcohol</div>
+        <div class="habit-chip" id="chip-dinner" onclick="toggleChip('dinner')">🌙 Cena tardía</div>
+      </div>
+    </div>
+
+    <div class="submit-row">
+      <button class="btn-submit" id="submit-btn" onclick="submitSnapshot()">Calcular score</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── Config ───────────────────────────────────────────────────────────────────
+const API = '';  // mismo origen — Caddy maneja el routing
+
+// ── State ────────────────────────────────────────────────────────────────────
+let token = localStorage.getItem('rd_token');
+let userName = localStorage.getItem('rd_name');
+let histChart = null;
+const habits = { caffeine: false, alcohol: false, dinner: false };
+
+// ── Boot ─────────────────────────────────────────────────────────────────────
+(function init() {
+  document.getElementById('today-date').textContent = new Date().toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' });
+  if (token) showApp();
+  else showAuth();
+})();
+
+// ── Auth ─────────────────────────────────────────────────────────────────────
+function showTab(tab) {
+  document.getElementById('login-form').style.display = tab === 'login' ? '' : 'none';
+  document.getElementById('register-form').style.display = tab === 'register' ? '' : 'none';
+  document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', (i === 0) === (tab === 'login')));
+  document.getElementById('auth-error').textContent = '';
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  try {
+    const res = await apiFetch('/api/auth/login', 'POST', { email, password: pass }, false);
+    saveAuth(res);
+  } catch (e) {
+    document.getElementById('auth-error').textContent = e.message || 'Error al ingresar';
+  }
+}
+
+async function doRegister() {
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pass = document.getElementById('reg-pass').value;
+  if (pass.length < 8) { document.getElementById('auth-error').textContent = 'Contraseña mínimo 8 caracteres'; return; }
+  try {
+    const res = await apiFetch('/api/auth/register', 'POST', { email, password: pass, name }, false);
+    saveAuth(res);
+  } catch (e) {
+    document.getElementById('auth-error').textContent = e.message || 'Error al registrar';
+  }
+}
+
+function saveAuth(res) {
+  token = res.access_token;
+  userName = res.name;
+  localStorage.setItem('rd_token', token);
+  localStorage.setItem('rd_name', userName);
+  showApp();
+}
+
+function doLogout() {
+  localStorage.removeItem('rd_token');
+  localStorage.removeItem('rd_name');
+  token = null;
+  document.getElementById('auth-screen').style.display = 'flex';
+  document.getElementById('app-screen').style.display = 'none';
+}
+
+// ── App ───────────────────────────────────────────────────────────────────────
+async function showApp() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'block';
+  document.getElementById('user-name-badge').textContent = userName || '';
+  await loadTodayScore();
+  await loadHistory();
+}
+
+async function loadTodayScore() {
+  try {
+    const score = await apiFetch('/api/scores/today', 'GET');
+    if (score) renderScore(score);
+    else showNoScore();
+  } catch (e) {
+    showNoScore();
+  }
+}
+
+function renderScore(s) {
+  document.getElementById('no-score').style.display = 'none';
+  document.getElementById('score-display').style.display = 'block';
+
+  const ring = document.getElementById('zone-ring');
+  ring.className = `zone-ring ${s.zone}`;
+  document.getElementById('score-num').textContent = s.recovery_score;
+  document.getElementById('score-num').style.color = zoneColor(s.zone);
+
+  const badge = document.getElementById('zone-badge');
+  badge.className = `zone-tag ${s.zone}`;
+  badge.textContent = { green: '🟢 Verde — Entrenar fuerte', yellow: '🟡 Amarillo — Moderado', red: '🔴 Rojo — Descanso' }[s.zone] || s.zone;
+
+  document.getElementById('strain-num').textContent = s.strain_score;
+  document.getElementById('strain-fill').style.width = s.strain_score + '%';
+
+  const metrics = [
+    { label: 'Batería', val: s.body_battery != null ? s.body_battery + '%' : '--', color: zoneColor(s.zone) },
+    { label: 'Sueño', val: s.sleep_score != null ? s.sleep_score + '%' : '--', color: '#7B5EA7' },
+    { label: 'FC reposo', val: s.hr_resting != null ? s.hr_resting + ' bpm' : '--', color: '#F5C842' },
+    { label: 'Estrés', val: s.stress_avg != null ? s.stress_avg + '%' : '--', color: '#FF4D6D' },
+  ];
+
+  document.getElementById('metrics-grid').innerHTML = metrics.map(m =>
+    `<div class="metric-item">
+      <div class="metric-dot" style="background:${m.color}"></div>
+      <div class="metric-info">
+        <div class="m-label">${m.label}</div>
+        <div class="m-val">${m.val}</div>
+      </div>
+    </div>`
+  ).join('');
+
+  document.getElementById('rec-text').textContent = s.recommendation || '—';
+  document.getElementById('insight-text').textContent = s.insight || '—';
+}
+
+function showNoScore() {
+  document.getElementById('no-score').style.display = 'block';
+  document.getElementById('score-display').style.display = 'none';
+}
+
+async function loadHistory() {
+  try {
+    const data = await apiFetch('/api/scores/history?days=7', 'GET');
+    if (!data || !data.scores || data.scores.length === 0) return;
+
+    document.getElementById('history-section').style.display = 'block';
+    const scores = [...data.scores].reverse();
+    const labels = scores.map(s => {
+      const d = new Date(s.date + 'T12:00:00');
+      return d.toLocaleDateString('es-CO', { weekday: 'short', day: 'numeric' });
+    });
+    const recoveries = scores.map(s => s.recovery_score);
+    const colors = scores.map(s => zoneColor(s.zone));
+
+    if (histChart) histChart.destroy();
+    const ctx = document.getElementById('history-chart').getContext('2d');
+    histChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Recovery',
+          data: recoveries,
+          backgroundColor: colors.map(c => c + '33'),
+          borderColor: colors,
+          borderWidth: 2,
+          borderRadius: 6,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { color: '#1E1E35' }, ticks: { color: '#6B6B8A' } },
+          y: { min: 0, max: 100, grid: { color: '#1E1E35' }, ticks: { color: '#6B6B8A' } },
+        }
+      }
+    });
+  } catch (e) { /* historial opcional */ }
+}
+
+// ── Manual snapshot ──────────────────────────────────────────────────────────
+function toggleChip(name) {
+  habits[name] = !habits[name];
+  document.getElementById('chip-' + name).classList.toggle('on', habits[name]);
+}
+
+async function submitSnapshot() {
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Calculando…';
+  try {
+    const body = {
+      source: 'manual',
+      captured_at: new Date().toISOString(),
+      body_battery: parseInt(document.getElementById('bb').value),
+      sleep_score: parseInt(document.getElementById('sleep').value),
+      hr_resting: parseInt(document.getElementById('hr').value),
+      stress_avg: parseInt(document.getElementById('stress').value),
+      activity_load: parseInt(document.getElementById('act').value),
+      sleep_hours: parseFloat(document.getElementById('sh').value),
+      caffeine_cups: habits.caffeine ? 2 : 0,
+      alcohol_drinks: habits.alcohol ? 1 : 0,
+      late_dinner: habits.dinner,
+    };
+    const res = await apiFetch('/api/snapshots', 'POST', body);
+    renderScore(res.score);
+    showToast('✓ Score calculado');
+    await loadHistory();
+  } catch (e) {
+    showToast('Error: ' + e.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Calcular score';
+  }
+}
+
+// ── Utilities ─────────────────────────────────────────────────────────────────
+function zoneColor(zone) {
+  return { green: '#00D4AA', yellow: '#F5C842', red: '#FF4D6D' }[zone] || '#6B6B8A';
+}
+
+function showToast(msg, error = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderColor = error ? 'var(--red)' : 'var(--green)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+async function getDeviceToken() {
+  try {
+    const res = await apiFetch('/api/auth/device-token', 'GET');
+    const tok = res.device_token;
+    document.getElementById('device-token-box').textContent = tok;
+    navigator.clipboard.writeText(tok).then(() => {
+      document.getElementById('token-copied').style.display = 'block';
+      setTimeout(() => document.getElementById('token-copied').style.display = 'none', 3000);
+    });
+  } catch (e) {
+    showToast('Error obteniendo token: ' + e.message, true);
+  }
+}
+
+async function apiFetch(path, method = 'GET', body = null, auth = true) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (auth && token) headers['Authorization'] = 'Bearer ' + token;
+  const res = await fetch(API + path, { method, headers, body: body ? JSON.stringify(body) : undefined });
+  if (res.status === 401) { doLogout(); throw new Error('Sesión expirada'); }
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Error del servidor');
+  }
+  return res.status === 204 ? null : res.json();
+}
+</script>
+</body>
+</html>
