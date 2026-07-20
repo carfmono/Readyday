@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<!-- ── SEO ─────────────────────────────────────────────────────────────────── -->
+<title>ReadyDay — Conoce tu cuerpo. Decide tu día.</title>
+<meta name="description" content="App de readiness diario para atletas y personas activas. Conecta tu Garmin o Apple Watch, obtén tu score de recuperación y sabe exactamente qué hacer hoy: entrenar fuerte, moderado o descansar."/>
+<meta name="keywords" content="readiness, garmin, apple watch, recuperación, entrenamiento, score, wellness, atleta"/>
+<meta name="author" content="ReadyDay"/>
+<link rel="canonical" href="https://www.fergussononline.org/readyday/"/>
+
+<!-- ── Open Graph ──────────────────────────────────────────────────────────── -->
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://www.fergussononline.org/readyday/"/>
+<meta property="og:title" content="ReadyDay — Conoce tu cuerpo. Decide tu día."/>
+<meta property="og:description" content="Score de readiness diario desde tu Garmin o Apple Watch. Sabe si entrenar fuerte, moderado o descansar — cada mañana."/>
+<meta property="og:image" content="https://www.fergussononline.org/readyday/static/og-image.png"/>
+<meta property="og:locale" content="es_CO"/>
+<meta property="og:site_name" content="ReadyDay"/>
+
+<!-- ── Twitter Card ────────────────────────────────────────────────────────── -->
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="ReadyDay — Conoce tu cuerpo. Decide tu día."/>
+<meta name="twitter:description" content="Score de readiness diario desde tu Garmin o Apple Watch."/>
+<meta name="twitter:image" content="https://www.fergussononline.org/readyday/static/og-image.png"/>
+
+<!-- ── Favicon / PWA ───────────────────────────────────────────────────────── -->
+<meta name="theme-color" content="#07070F"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+
+<style>
+/* ── TOKENS ─────────────────────────────────────────────────────────────────── */
+:root {
+  --bg:      #07070F;
+  --surf:    #0E0E1C;
+  --surf2:   #141428;
+  --border:  #1E1E38;
+  --green:   #00D4AA;
+  --yellow:  #F5C842;
+  --red:     #FF4D6D;
+  --purple:  #7B5EA7;
+  --purple2: #9B7EC8;
+  --text:    #E8E8F0;
+  --muted:   #6B6B8A;
+  --muted2:  #9090A8;
+  --r16:     16px;
+  --r24:     24px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+a { color: inherit; text-decoration: none; }
+
+/* ── CANVAS PARTÍCULAS ───────────────────────────────────────────────────────── */
+#particles-bg {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: .5;
+}
+
+/* ── NAV ──────────────────────────────────────────────────────────────────────── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  padding: 0 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 64px;
+  background: rgba(7,7,15,0.8);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(30,30,56,0.6);
+}
+.nav-logo { font-size: 22px; font-weight: 900; letter-spacing: -1px; }
+.nav-logo .accent { color: var(--green); }
+.nav-links { display: flex; gap: 28px; align-items: center; }
+.nav-links a { font-size: 14px; color: var(--muted2); transition: color .2s; }
+.nav-links a:hover { color: var(--text); }
+.nav-cta {
+  padding: 9px 20px; background: var(--purple); border-radius: 10px;
+  font-size: 14px; font-weight: 600; color: #fff !important;
+  transition: opacity .2s, transform .2s;
+}
+.nav-cta:hover { opacity: .85; transform: translateY(-1px); }
+@media (max-width: 600px) { .nav-links a:not(.nav-cta) { display: none; } }
+
+/* ── HERO ─────────────────────────────────────────────────────────────────────── */
+#hero {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  position: relative; padding: 100px 24px 80px;
+  text-align: center;
+}
+.hero-content { max-width: 780px; position: relative; z-index: 1; }
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 16px; border: 1px solid var(--border);
+  border-radius: 20px; font-size: 12px; color: var(--muted2);
+  margin-bottom: 28px; background: var(--surf);
+  animation: fadeUp .6s ease both;
+}
+.hero-badge .dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--green);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(0,212,170,.4); }
+  50%      { box-shadow: 0 0 0 6px rgba(0,212,170,0); }
+}
+
+.hero-title {
+  font-size: clamp(40px, 7vw, 76px);
+  font-weight: 900;
+  letter-spacing: -3px;
+  line-height: 1.05;
+  margin-bottom: 20px;
+  animation: fadeUp .7s .1s ease both;
+}
+.hero-title .g { color: var(--green); }
+.hero-title .p { color: var(--purple2); }
+
+.hero-sub {
+  font-size: clamp(16px, 2vw, 20px);
+  color: var(--muted2);
+  max-width: 560px;
+  margin: 0 auto 40px;
+  line-height: 1.65;
+  animation: fadeUp .7s .2s ease both;
+}
+
+.hero-ctas {
+  display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
+  animation: fadeUp .7s .3s ease both;
+}
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 16px 30px; background: var(--purple); border-radius: 14px;
+  font-size: 16px; font-weight: 700; color: #fff;
+  transition: all .25s; box-shadow: 0 8px 30px rgba(123,94,167,.35);
+}
+.btn-primary:hover { transform: translateY(-3px); box-shadow: 0 14px 40px rgba(123,94,167,.5); opacity: .92; }
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 16px 30px; border: 1px solid var(--border); border-radius: 14px;
+  font-size: 16px; font-weight: 600; color: var(--text);
+  background: var(--surf); transition: all .25s;
+}
+.btn-secondary:hover { border-color: var(--purple); transform: translateY(-3px); }
+
+/* ── SCORE MOCKUP ─────────────────────────────────────────────────────────────── */
+.hero-mockup {
+  margin: 64px auto 0;
+  max-width: 360px;
+  animation: fadeUp .8s .4s ease both;
+}
+.mockup-phone {
+  background: var(--surf);
+  border: 1px solid var(--border);
+  border-radius: 32px;
+  padding: 28px 24px;
+  box-shadow: 0 40px 100px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.04);
+  position: relative;
+  overflow: hidden;
+}
+.mockup-phone::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 180px;
+  background: radial-gradient(ellipse at 50% 0%, rgba(0,212,170,.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+.mockup-date { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 24px; }
+.mockup-ring-wrap { display: flex; justify-content: center; margin-bottom: 20px; }
+
+.mockup-ring {
+  width: 130px; height: 130px; border-radius: 50%;
+  border: 8px solid var(--green);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  box-shadow: 0 0 40px rgba(0,212,170,.25), inset 0 0 20px rgba(0,212,170,.05);
+  position: relative;
+}
+.mockup-ring::after {
+  content: '';
+  position: absolute; inset: -14px; border-radius: 50%;
+  border: 1px solid rgba(0,212,170,.15);
+}
+.mockup-score { font-size: 52px; font-weight: 900; color: var(--green); line-height: 1; }
+.mockup-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+.mockup-zone-tag {
+  display: inline-block; padding: 4px 14px; border-radius: 20px; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px;
+  background: rgba(0,212,170,.12); color: var(--green); margin: 0 auto 16px; display: block; text-align: center;
+}
+.mockup-rec {
+  background: var(--surf2); border-radius: 12px; padding: 14px;
+  font-size: 13px; color: var(--text); line-height: 1.5;
+}
+.mockup-rec .rec-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 6px; }
+
+.mockup-metrics {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px;
+}
+.metric-pill {
+  background: var(--surf2); border-radius: 10px; padding: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.metric-pill .mp-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.metric-pill .mp-info .mp-lbl { font-size: 10px; color: var(--muted); }
+.metric-pill .mp-info .mp-val { font-size: 15px; font-weight: 700; }
+
+/* ── FEATURES ─────────────────────────────────────────────────────────────────── */
+section { padding: 100px 24px; position: relative; z-index: 1; }
+.section-inner { max-width: 1100px; margin: 0 auto; }
+.section-label { font-size: 12px; color: var(--purple2); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 14px; }
+.section-title { font-size: clamp(28px, 4vw, 48px); font-weight: 800; letter-spacing: -1.5px; margin-bottom: 16px; line-height: 1.15; }
+.section-sub { font-size: 18px; color: var(--muted2); max-width: 540px; line-height: 1.6; margin-bottom: 60px; }
+
+.features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+.feat-card {
+  background: var(--surf); border: 1px solid var(--border); border-radius: var(--r24);
+  padding: 32px; position: relative; overflow: hidden;
+  transition: border-color .3s, transform .3s;
+}
+.feat-card:hover { border-color: var(--purple); transform: translateY(-4px); }
+.feat-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--grad-top, linear-gradient(90deg, var(--purple), var(--green)));
+  opacity: 0; transition: opacity .3s;
+}
+.feat-card:hover::before { opacity: 1; }
+.feat-icon {
+  width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center;
+  margin-bottom: 20px; font-size: 24px;
+}
+.feat-card h3 { font-size: 20px; font-weight: 700; margin-bottom: 10px; }
+.feat-card p { font-size: 14px; color: var(--muted2); line-height: 1.65; }
+
+.feat-icon.green { background: rgba(0,212,170,.12); }
+.feat-icon.purple { background: rgba(123,94,167,.15); }
+.feat-icon.yellow { background: rgba(245,200,66,.12); }
+.feat-icon.red { background: rgba(255,77,109,.12); }
+.feat-icon.blue { background: rgba(100,180,255,.12); }
+.feat-icon.teal { background: rgba(0,200,200,.12); }
+
+/* ── HOW IT WORKS ──────────────────────────────────────────────────────────────── */
+#how { background: var(--surf); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0; }
+.step {
+  padding: 40px 32px; position: relative;
+  border-right: 1px solid var(--border);
+}
+.step:last-child { border-right: none; }
+@media (max-width: 700px) { .step { border-right: none; border-bottom: 1px solid var(--border); } }
+.step-num {
+  font-size: 72px; font-weight: 900; line-height: 1;
+  background: linear-gradient(135deg, var(--purple), var(--green));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  margin-bottom: 16px;
+}
+.step h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+.step p { font-size: 14px; color: var(--muted2); line-height: 1.6; }
+
+/* ── DEVICES ───────────────────────────────────────────────────────────────────── */
+.devices-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+.device-card {
+  background: var(--surf); border: 1px solid var(--border); border-radius: var(--r16);
+  padding: 28px 24px; text-align: center; transition: all .3s;
+}
+.device-card:hover { border-color: var(--green); }
+.device-card .device-icon { font-size: 40px; margin-bottom: 14px; }
+.device-card h4 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+.device-card p { font-size: 13px; color: var(--muted); }
+.device-card .status {
+  display: inline-block; margin-top: 12px; padding: 3px 10px;
+  border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: .5px;
+}
+.status.ready { background: rgba(0,212,170,.12); color: var(--green); }
+.status.soon  { background: rgba(245,200,66,.12); color: var(--yellow); }
+
+/* ── SCORE BREAKDOWN ──────────────────────────────────────────────────────────── */
+.scores-explainer { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+.score-exp {
+  background: var(--surf); border: 1px solid var(--border); border-radius: var(--r16);
+  padding: 28px; position: relative; overflow: hidden;
+}
+.score-exp::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+  background: var(--exp-color, var(--green));
+}
+.score-exp .exp-num {
+  font-size: 48px; font-weight: 900; margin-bottom: 8px;
+  color: var(--exp-color, var(--green));
+}
+.score-exp h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+.score-exp p { font-size: 13px; color: var(--muted2); line-height: 1.6; }
+.zone-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+.zone-pill {
+  padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;
+}
+.zone-pill.green  { background: rgba(0,212,170,.12);  color: var(--green); }
+.zone-pill.yellow { background: rgba(245,200,66,.12); color: var(--yellow); }
+.zone-pill.red    { background: rgba(255,77,109,.12); color: var(--red); }
+
+/* ── DOWNLOAD ──────────────────────────────────────────────────────────────────── */
+#download {
+  background: linear-gradient(135deg, rgba(123,94,167,.12) 0%, rgba(0,212,170,.08) 100%);
+  border-top: 1px solid var(--border);
+}
+.download-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+@media (max-width: 700px) { .download-grid { grid-template-columns: 1fr; } }
+.download-options { display: flex; flex-direction: column; gap: 14px; }
+.dl-option {
+  display: flex; align-items: center; gap: 16px;
+  background: var(--surf); border: 1px solid var(--border); border-radius: var(--r16);
+  padding: 20px; transition: all .25s; cursor: pointer;
+}
+.dl-option:hover { border-color: var(--purple); transform: translateX(4px); }
+.dl-icon { font-size: 28px; flex-shrink: 0; }
+.dl-info h4 { font-size: 16px; font-weight: 700; margin-bottom: 3px; }
+.dl-info p { font-size: 13px; color: var(--muted); }
+.dl-arrow { margin-left: auto; color: var(--purple2); font-size: 20px; }
+
+/* ── FOOTER ──────────────────────────────────────────────────────────────────────── */
+footer {
+  border-top: 1px solid var(--border); padding: 40px 24px;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: gap;
+  font-size: 13px; color: var(--muted); max-width: 1100px; margin: 0 auto;
+}
+.footer-logo { font-weight: 800; font-size: 18px; letter-spacing: -1px; }
+.footer-logo .accent { color: var(--green); }
+
+/* ── ANIMATIONS ──────────────────────────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.reveal {
+  opacity: 0; transform: translateY(30px);
+  transition: opacity .7s ease, transform .7s ease;
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ── SCORE COUNTER ANIMATION ──────────────────────────────────────────────────── */
+@keyframes countUp {
+  from { opacity: 0; transform: scale(.7); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.mockup-score { animation: countUp .9s .5s ease both; }
+
+/* ── GLOW DIVIDER ─────────────────────────────────────────────────────────────── */
+.glow-divider {
+  width: 100%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--purple), var(--green), transparent);
+  opacity: .4;
+}
+
+/* ── TESTIMONIAL ─────────────────────────────────────────────────────────────── */
+.quote-block {
+  max-width: 640px; margin: 0 auto; text-align: center;
+  padding: 48px 32px;
+  background: var(--surf); border: 1px solid var(--border); border-radius: var(--r24);
+}
+.quote-text { font-size: 22px; font-weight: 500; line-height: 1.55; margin-bottom: 20px; color: var(--text); }
+.quote-author { font-size: 13px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- Partículas de fondo -->
+<canvas id="particles-bg"></canvas>
+
+<!-- ── NAV ─────────────────────────────────────────────────────────────────── -->
+<nav>
+  <div class="nav-logo">Ready<span class="accent">Day</span></div>
+  <div class="nav-links">
+    <a href="#features">Funciones</a>
+    <a href="#how">Cómo funciona</a>
+    <a href="#download">Descarga</a>
+    <a href="/readyday/app/" class="nav-cta">Abrir app →</a>
+  </div>
+</nav>
+
+<!-- ── HERO ─────────────────────────────────────────────────────────────────── -->
+<section id="hero">
+  <div class="hero-content">
+    <div class="hero-badge">
+      <div class="dot"></div>
+      Disponible ahora — Alpha 1
+    </div>
+
+    <h1 class="hero-title">
+      Conoce tu<br>
+      <span class="g">cuerpo.</span>
+      Decide tu<br>
+      <span class="p">día.</span>
+    </h1>
+
+    <p class="hero-sub">
+      ReadyDay conecta con tu Garmin o Apple Watch y calcula cada mañana si deberías
+      entrenar fuerte, moderado, o simplemente descansar.
+      Sin adivinar. Con datos reales.
+    </p>
+
+    <div class="hero-ctas">
+      <a href="#download" class="btn-primary">
+        <span>📲</span> Descargar app
+      </a>
+      <a href="/readyday/app/" class="btn-secondary">
+        <span>🌐</span> Versión web
+      </a>
+    </div>
+
+    <!-- Mockup del score -->
+    <div class="hero-mockup">
+      <div class="mockup-phone">
+        <div class="mockup-date">Domingo 19 julio — HOY</div>
+        <div class="mockup-ring-wrap">
+          <div class="mockup-ring">
+            <div class="mockup-score" id="animated-score">78</div>
+            <div class="mockup-label">Recovery</div>
+          </div>
+        </div>
+        <div class="mockup-zone-tag">🟢 VERDE — Entrenar fuerte</div>
+        <div class="mockup-rec">
+          <div class="rec-label">Recomendación de hoy</div>
+          Tu cuerpo está recuperado — es buen día para exigirte. Sueño excelente y Body Battery alto.
+        </div>
+        <div class="mockup-metrics">
+          <div class="metric-pill">
+            <div class="mp-dot" style="background:var(--green)"></div>
+            <div class="mp-info">
+              <div class="mp-lbl">Body Battery</div>
+              <div class="mp-val" style="color:var(--green)">78%</div>
+            </div>
+          </div>
+          <div class="metric-pill">
+            <div class="mp-dot" style="background:var(--purple2)"></div>
+            <div class="mp-info">
+              <div class="mp-lbl">Sueño</div>
+              <div class="mp-val" style="color:var(--purple2)">82%</div>
+            </div>
+          </div>
+          <div class="metric-pill">
+            <div class="mp-dot" style="background:var(--yellow)"></div>
+            <div class="mp-info">
+              <div class="mp-lbl">FC reposo</div>
+              <div class="mp-val" style="color:var(--yellow)">56 bpm</div>
+            </div>
+          </div>
+          <div class="metric-pill">
+            <div class="mp-dot" style="background:var(--muted)"></div>
+            <div class="mp-info">
+              <div class="mp-lbl">Estrés</div>
+              <div class="mp-val">28%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="glow-divider"></div>
+
+<!-- ── FEATURES ─────────────────────────────────────────────────────────────── -->
+<section id="features">
+  <div class="section-inner">
+    <p class="section-label reveal">Funciones</p>
+    <h2 class="section-title reveal">Todo lo que necesitas<br>para entrenar inteligente</h2>
+    <p class="section-sub reveal">ReadyDay no es otro tracker. Es una capa de decisión encima de tus datos.</p>
+
+    <div class="features-grid">
+      <div class="feat-card reveal" style="--grad-top: linear-gradient(90deg, var(--green), var(--purple))">
+        <div class="feat-icon green">⚡</div>
+        <h3>Score diario en segundos</h3>
+        <p>Cada mañana tu reloj sincroniza y ReadyDay calcula Recovery, Strain y Balance — tres números que explican cómo está tu cuerpo hoy.</p>
+      </div>
+      <div class="feat-card reveal" style="--grad-top: linear-gradient(90deg, var(--purple), var(--purple2))">
+        <div class="feat-icon purple">🎯</div>
+        <h3>Decisión clara y accionable</h3>
+        <p>No más datos que no sabes cómo usar. ReadyDay te dice exactamente qué hacer: entrenar fuerte, moderado, o descansar activamente.</p>
+      </div>
+      <div class="feat-card reveal" style="--grad-top: linear-gradient(90deg, var(--yellow), var(--green))">
+        <div class="feat-icon yellow">⌚</div>
+        <h3>Widget en tu reloj Garmin</h3>
+        <p>El score aparece directamente en tu Garmin. Body Battery, FC, Sueño y Estrés leídos en el reloj — sin necesitar el teléfono.</p>
+      </div>
+      <div class="feat-card reveal" style="--grad-top: linear-gradient(90deg, var(--red), var(--purple))">
+        <div class="feat-icon red">🔔</div>
+        <h3>Notificación a las 7am</h3>
+        <p>Recibes tu score cada mañana antes de que empiece el día. Sin abrir nada. Solo la información que necesitas cuando la necesitas.</p>
+      </div>
+      <div class="feat-card reveal" style="--grad-top: linear-gradient(90deg, var(--green), var(--yellow))">
+        <div class="feat-icon teal">🧠</div>
+        <h3>Explicaciones en lenguaje natural</h3>
+        <p>ReadyDay usa IA para explicar en palabras simples por qué tu cuerpo está donde está — sin jerga médica ni tecnicismos.</p>
+      </div>
+      <div class="feat-card reveal" style="--grad-top: linear-gradient(90deg, var(--purple2), var(--green))">
+        <div class="feat-icon blue">📈</div>
+        <h3>Historial de 7 a 30 días</h3>
+        <p>Ve tendencias en tu recuperación, identifica cuándo te sobreentrenás y ajusta tu semana con datos reales de tu cuerpo.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="glow-divider"></div>
+
+<!-- ── HOW IT WORKS ──────────────────────────────────────────────────────────── -->
+<section id="how">
+  <div class="section-inner">
+    <p class="section-label reveal" style="text-align:center">Cómo funciona</p>
+    <h2 class="section-title reveal" style="text-align:center">Tres pasos. Cada mañana.</h2>
+    <p class="section-sub reveal" style="text-align:center;margin:0 auto 60px">Sin fricción. Sin configuración diaria.</p>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="step-num">01</div>
+        <h3>Tu reloj sincroniza</h3>
+        <p>Durante la noche, tu Garmin registra Body Battery, frecuencia cardíaca, sueño y estrés. Al despertar, ya están disponibles.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">02</div>
+        <h3>Calculamos tu score</h3>
+        <p>El algoritmo de ReadyDay combina las métricas con pesos científicos y genera tu Recovery Score, Strain Score y Balance del día.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">03</div>
+        <h3>Tú decides</h3>
+        <p>Recibes una notificación push con tu zona — verde, amarilla o roja — y una recomendación concreta de entrenamiento para ese día.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SCORE BREAKDOWN ──────────────────────────────────────────────────────── -->
+<section id="scores">
+  <div class="section-inner">
+    <p class="section-label reveal">El algoritmo</p>
+    <h2 class="section-title reveal">Tres scores. Una decisión.</h2>
+    <p class="section-sub reveal">Pesos calibrados sobre Body Battery, Sueño, FC en reposo y Estrés.</p>
+    <div class="scores-explainer">
+      <div class="score-exp reveal" style="--exp-color: var(--green)">
+        <div class="exp-num">77</div>
+        <h3>Recovery Score</h3>
+        <p>Qué tan recuperado está tu cuerpo. Combina Body Battery (35%), estrés inverso (25%), FC en reposo (20%) y calidad de sueño (20%).</p>
+      </div>
+      <div class="score-exp reveal" style="--exp-color: var(--yellow)">
+        <div class="exp-num">16</div>
+        <h3>Strain Score</h3>
+        <p>Cuánta carga acumuló tu cuerpo. Actividad del día anterior, tiempo de recuperación pendiente, estrés y hábitos (cafeína, alcohol, cena tardía).</p>
+      </div>
+      <div class="score-exp reveal" style="--exp-color: var(--purple2)">
+        <div class="exp-num">69</div>
+        <h3>Balance & Zona</h3>
+        <p>La resta de Recovery menos la mitad del Strain. Define tu zona del día:</p>
+        <div class="zone-pills">
+          <span class="zone-pill green">🟢 Verde ≥70+20 → Entrenar fuerte</span>
+          <span class="zone-pill yellow">🟡 Amarillo ≥45 → Moderado</span>
+          <span class="zone-pill red">🔴 Rojo →Descanso activo</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="glow-divider"></div>
+
+<!-- ── DEVICES ─────────────────────────────────────────────────────────────── -->
+<section id="devices" style="background:var(--surf);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+  <div class="section-inner">
+    <p class="section-label reveal" style="text-align:center">Compatibilidad</p>
+    <h2 class="section-title reveal" style="text-align:center">Tu reloj. Tu app.</h2>
+    <p class="section-sub reveal" style="text-align:center;margin:0 auto 48px">Soporte multi-wearable — sin cambiar de dispositivo.</p>
+    <div class="devices-grid">
+      <div class="device-card reveal">
+        <div class="device-icon">⌚</div>
+        <h4>Garmin</h4>
+        <p>Venu, Fenix, Forerunner, Vivoactive, Instinct</p>
+        <span class="status ready">Disponible</span>
+      </div>
+      <div class="device-card reveal">
+        <div class="device-icon">🍎</div>
+        <h4>Apple Watch</h4>
+        <p>Series 7+ vía HealthKit</p>
+        <span class="status soon">Próximamente</span>
+      </div>
+      <div class="device-card reveal">
+        <div class="device-icon">📱</div>
+        <h4>Android App</h4>
+        <p>Health Connect — Pixel, Samsung Galaxy</p>
+        <span class="status soon">Alpha 1</span>
+      </div>
+      <div class="device-card reveal">
+        <div class="device-icon">🌐</div>
+        <h4>Web</h4>
+        <p>Desde cualquier navegador, con entrada manual</p>
+        <span class="status ready">Disponible</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── QUOTE ─────────────────────────────────────────────────────────────────── -->
+<section>
+  <div class="section-inner" style="text-align:center">
+    <div class="quote-block reveal">
+      <p class="quote-text">"No necesitas entrenar más duro.<br>Necesitas entrenar más inteligente."</p>
+      <p class="quote-author">— El principio detrás de ReadyDay</p>
+    </div>
+  </div>
+</section>
+
+<div class="glow-divider"></div>
+
+<!-- ── DOWNLOAD ──────────────────────────────────────────────────────────────── -->
+<section id="download">
+  <div class="section-inner">
+    <div class="download-grid">
+      <div>
+        <p class="section-label reveal">Descargar</p>
+        <h2 class="section-title reveal">Empieza hoy.<br>Gratis.</h2>
+        <p class="section-sub reveal" style="margin-bottom:0">
+          ReadyDay Alpha 1 está disponible ahora. Crea tu cuenta, conecta tu reloj y recibe tu primer score en minutos.
+        </p>
+      </div>
+      <div class="download-options">
+        <a href="/readyday/app/" class="dl-option reveal">
+          <div class="dl-icon">🌐</div>
+          <div class="dl-info">
+            <h4>Versión Web</h4>
+            <p>Sin instalación — funciona en cualquier dispositivo ya</p>
+          </div>
+          <div class="dl-arrow">→</div>
+        </a>
+        <a href="#" id="apk-btn" class="dl-option reveal" onclick="showApkInfo(event)">
+          <div class="dl-icon">🤖</div>
+          <div class="dl-info">
+            <h4>Android APK</h4>
+            <p>Sideload — próximamente en Play Store</p>
+          </div>
+          <div class="dl-arrow">→</div>
+        </a>
+        <div class="dl-option reveal" style="opacity:.5;cursor:default">
+          <div class="dl-icon">🍎</div>
+          <div class="dl-info">
+            <h4>iOS / App Store</h4>
+            <p>Próximamente — 2026 Q3</p>
+          </div>
+          <div class="dl-arrow" style="opacity:.3">→</div>
+        </div>
+        <a href="https://apps.garmin.com" target="_blank" rel="noopener" class="dl-option reveal">
+          <div class="dl-icon">⌚</div>
+          <div class="dl-info">
+            <h4>Widget Garmin</h4>
+            <p>Connect IQ Store — instalar en tu reloj</p>
+          </div>
+          <div class="dl-arrow">→</div>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ─────────────────────────────────────────────────────────────────── -->
+<div class="glow-divider"></div>
+<footer>
+  <div class="footer-logo">Ready<span class="accent">Day</span></div>
+  <div style="color:var(--muted);font-size:13px">
+    Alpha 1 · Medellín, Colombia · 2026
+  </div>
+  <a href="/readyday/app/" style="color:var(--purple2);font-size:13px">Ir a la app →</a>
+</footer>
+
+<script>
+// ── Partículas de fondo ────────────────────────────────────────────────────────
+(function() {
+  const canvas = document.getElementById('particles-bg');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [];
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const COLORS = ['#00D4AA', '#7B5EA7', '#F5C842'];
+  const N = 55;
+
+  for (let i = 0; i < N; i++) {
+    particles.push({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      r: Math.random() * 2 + .5,
+      dx: (Math.random() - .5) * .3,
+      dy: (Math.random() - .5) * .3,
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      alpha: Math.random() * .4 + .1,
+    });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(p => {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.color + Math.round(p.alpha * 255).toString(16).padStart(2, '0');
+      ctx.fill();
+      p.x += p.dx; p.y += p.dy;
+      if (p.x < 0) p.x = W;
+      if (p.x > W) p.x = 0;
+      if (p.y < 0) p.y = H;
+      if (p.y > H) p.y = 0;
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ── Score animado en el hero ────────────────────────────────────────────────────
+(function() {
+  let val = 0;
+  const target = 78;
+  const el = document.getElementById('animated-score');
+  const step = () => {
+    if (val < target) {
+      val = Math.min(target, val + 2);
+      el.textContent = val;
+      setTimeout(step, 18);
+    }
+  };
+  setTimeout(step, 600);
+})();
+
+// ── Reveal on scroll ────────────────────────────────────────────────────────────
+(function() {
+  const els = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 60);
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: .1 });
+  els.forEach(el => io.observe(el));
+})();
+
+// ── APK info ────────────────────────────────────────────────────────────────────
+function showApkInfo(e) {
+  e.preventDefault();
+  alert('El APK estará disponible próximamente.\n\nPor ahora puedes usar la versión web desde tu Android:\nhttps://www.fergussononline.org/readyday/app/');
+}
+</script>
+</body>
+</html>

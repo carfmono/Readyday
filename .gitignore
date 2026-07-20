@@ -2,3 +2,6 @@ SECRET_KEY=*
 .env
 __pycache__/
 *.db
+garmin-build/
+*.pem
+*.der

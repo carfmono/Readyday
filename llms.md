@@ -51,7 +51,8 @@ backend/
     └── garmin_service.py      # fetch_snapshot() — pull desde Garmin Connect cloud
 
 frontend/
-└── index.html                 # Dashboard web (testing sin app móvil)
+├── landing.html               # Landing page marketing (sirve en /)
+└── index.html                 # Dashboard web — sirve en /app/ y /app/{path}
 
 garmin-ciq/                    # Monkey C — app Connect IQ para el reloj
 └── source/
@@ -97,6 +98,14 @@ docker-compose.yml
 - **Config**: `.env` → `NOTIFICATION_HOUR=7` (UTC-5 → ajustar según timezone del servidor)
 - **Código**: `scheduler.py` — job `morning_sync`
 - **Blast radius**: solo `scheduler.py`
+
+### Cambiar la landing page o el routing de rutas web
+
+- **Landing** (`/`): `frontend/landing.html` — página de marketing. Editar este archivo para cambiar copy/branding.
+- **App dashboard** (`/app/*`): `frontend/index.html` — dashboard auth completo.
+- **Routing en backend**: `main.py` función `serve_landing()` para `/`; `serve_app()` para `/app*`; `serve_static_fallback()` para archivos con extensión.
+- **Blast radius**: solo `main.py` + los dos HTML. No afecta API.
+- **Center** (`/data/proyectos/caddy/site/center/index.html`): acceso directo al servicio en el panel central del servidor — array `SERVICES`.
 
 ### Agregar autenticación OAuth (en lugar de email/password)
 

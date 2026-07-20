@@ -198,18 +198,34 @@
       <p>Aún no hay score para hoy. Envía tu snapshot debajo.</p>
     </div>
 
-  <!-- Token para reloj Garmin -->
-  <p class="section-title">RELOJ GARMIN — TOKEN DE CONEXIÓN</p>
+  <!-- Conectar Garmin -->
+  <p class="section-title">GARMIN — CONEXIÓN AUTOMÁTICA</p>
   <div class="entry-card" style="margin-bottom:24px">
-    <h3 style="margin-bottom:8px">Token para el widget del reloj</h3>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Copia este token y pégalo en los ajustes del widget ReadyDay en tu reloj Garmin. Válido por 1 año.</p>
-    <div style="display:flex;gap:10px;align-items:center">
-      <div id="device-token-box" style="flex:1;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:10px;font-size:12px;color:var(--muted);word-break:break-all;font-family:monospace">
-        Haz clic en "Obtener token" →
-      </div>
-      <button class="btn-submit" style="flex:0;white-space:nowrap;padding:10px 16px" onclick="getDeviceToken()">Obtener token</button>
+    <div id="garmin-status-bar" style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <div id="garmin-dot" style="width:10px;height:10px;border-radius:50%;background:var(--muted);flex-shrink:0"></div>
+      <span id="garmin-status-text" style="font-size:13px;color:var(--muted)">Verificando estado…</span>
     </div>
-    <p id="token-copied" style="font-size:12px;color:var(--green);margin-top:8px;display:none">✓ Copiado al portapapeles</p>
+
+    <div id="garmin-connect-form">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Ingresa tu cuenta de Garmin Connect para sincronizar automáticamente los datos del reloj (Body Battery, sueño, FC, estrés).</p>
+      <div class="field" style="margin-bottom:10px">
+        <label>Email de Garmin Connect</label>
+        <input id="garmin-email" type="email" placeholder="tu@email.com" style="width:100%;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px"/>
+      </div>
+      <div class="field" style="margin-bottom:14px">
+        <label>Contraseña de Garmin Connect</label>
+        <input id="garmin-pass" type="password" placeholder="••••••••" style="width:100%;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px"/>
+      </div>
+      <button class="btn-submit" style="padding:10px 20px" onclick="connectGarmin()">Conectar Garmin</button>
+    </div>
+
+    <div id="garmin-connected-panel" style="display:none">
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn-submit" style="padding:10px 20px" onclick="garminSyncNow()">Sincronizar ahora</button>
+        <button onclick="disconnectGarmin()" style="padding:10px 20px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--muted);cursor:pointer;font-size:14px">Desconectar</button>
+      </div>
+      <p id="garmin-sync-result" style="font-size:13px;color:var(--green);margin-top:10px;display:none"></p>
+    </div>
   </div>
   </div>
 
@@ -278,7 +294,12 @@
 
 <script>
 // ── Config ───────────────────────────────────────────────────────────────────
-const API = '';  // mismo origen — Caddy maneja el routing
+// Detecta el basePath desde la URL actual para funcionar tanto en localhost
+// como detrás de Caddy con sub-path (/readyday). Elimina /app/ del path.
+const API = (function() {
+  const p = window.location.pathname.replace(/\/app\/?.*$/, '').replace(/\/$/, '');
+  return p || '';
+})();
 
 // ── State ────────────────────────────────────────────────────────────────────
 let token = localStorage.getItem('rd_token');
@@ -348,6 +369,7 @@ async function showApp() {
   document.getElementById('user-name-badge').textContent = userName || '';
   await loadTodayScore();
   await loadHistory();
+  loadGarminStatus();
 }
 
 async function loadTodayScore() {
@@ -492,17 +514,70 @@ function showToast(msg, error = false) {
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-async function getDeviceToken() {
+async function loadGarminStatus() {
   try {
-    const res = await apiFetch('/api/auth/device-token', 'GET');
-    const tok = res.device_token;
-    document.getElementById('device-token-box').textContent = tok;
-    navigator.clipboard.writeText(tok).then(() => {
-      document.getElementById('token-copied').style.display = 'block';
-      setTimeout(() => document.getElementById('token-copied').style.display = 'none', 3000);
-    });
+    const s = await apiFetch('/api/garmin/status', 'GET');
+    const dot = document.getElementById('garmin-dot');
+    const txt = document.getElementById('garmin-status-text');
+    if (s.connected && s.has_credentials) {
+      dot.style.background = 'var(--green)';
+      txt.style.color = 'var(--green)';
+      txt.textContent = 'Garmin conectado — sync automático activo';
+      document.getElementById('garmin-connect-form').style.display = 'none';
+      document.getElementById('garmin-connected-panel').style.display = 'block';
+    } else {
+      dot.style.background = 'var(--muted)';
+      txt.style.color = 'var(--muted)';
+      txt.textContent = 'No conectado — ingresa tus credenciales de Garmin';
+      document.getElementById('garmin-connect-form').style.display = 'block';
+      document.getElementById('garmin-connected-panel').style.display = 'none';
+    }
   } catch (e) {
-    showToast('Error obteniendo token: ' + e.message, true);
+    document.getElementById('garmin-status-text').textContent = 'Error verificando estado';
+  }
+}
+
+async function connectGarmin() {
+  const email = document.getElementById('garmin-email').value.trim();
+  const pass = document.getElementById('garmin-pass').value;
+  if (!email || !pass) { showToast('Ingresa email y contraseña de Garmin', true); return; }
+  try {
+    await apiFetch('/api/garmin/connect', 'POST', { garmin_email: email, garmin_password: pass });
+    showToast('Garmin conectado');
+    document.getElementById('garmin-email').value = '';
+    document.getElementById('garmin-pass').value = '';
+    await loadGarminStatus();
+  } catch (e) {
+    showToast('Error: ' + e.message, true);
+  }
+}
+
+async function garminSyncNow() {
+  const btn = event.target;
+  btn.textContent = 'Sincronizando…';
+  btn.disabled = true;
+  try {
+    const res = await apiFetch('/api/garmin/sync-now', 'POST');
+    showToast(res.message);
+    const el = document.getElementById('garmin-sync-result');
+    el.textContent = res.message + ' — recargando score…';
+    el.style.display = 'block';
+    await loadTodayScore();
+  } catch (e) {
+    showToast('Error sync: ' + e.message, true);
+  } finally {
+    btn.textContent = 'Sincronizar ahora';
+    btn.disabled = false;
+  }
+}
+
+async function disconnectGarmin() {
+  try {
+    await apiFetch('/api/devices/garmin', 'DELETE');
+    showToast('Garmin desconectado');
+    await loadGarminStatus();
+  } catch (e) {
+    showToast('Error: ' + e.message, true);
   }
 }
 
